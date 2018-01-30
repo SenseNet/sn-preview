@@ -1,0 +1,57 @@
+<Package type='Install'>
+  <Id>SenseNet.Preview</Id>
+  <Description>sensenet ECM Preview Generator 7.0</Description>
+  <ReleaseDate>2018-01-29</ReleaseDate>
+  <Version>7.0.0</Version>
+  <Dependencies>
+    <Dependency id='SenseNet.Services' minVersion='7.0.0' />
+  </Dependencies>
+  <Parameters>
+    <Parameter name="@importdemo" description="Import demo content.">false</Parameter>
+  </Parameters>
+  <Steps>
+    <Phase>
+      <StartRepository startWorkflowEngine="false" />
+      
+      <Import target="/Root" LogLevel="Verbose" source="import" />
+      
+      <IfComponentExists>
+        <Components>
+          <Component id="SenseNet.WebPages" minVersion="7.0.0" />
+        </Components>
+        <Then>
+          <Trace>WebPages component found, importing views and pages...</Trace>
+          <Import target="/Root" LogLevel="Verbose" source="import-pages" />
+        </Then>
+        <Else>
+          <Trace>WebPages component not found, views and pages are not imported.</Trace>
+        </Else>
+      </IfComponentExists>
+
+      <If condition="@importdemo">
+        <Then>
+          <IfContentExists path="/Root/Sites/Default_Site/workspaces/Project/budapestprojectworkspace/Document_Library">
+            <Then>
+              <IfComponentExists>
+                <Components>
+                  <Component id="SenseNet.Workspaces" minVersion="7.0.0" />
+                </Components>
+                <Then>
+                  <Trace>Importing demo documents and preview images...</Trace>
+                  <Import target="/Root" LogLevel="Verbose" source="import-demo" />
+                </Then>
+                <Else>
+                  <Trace>Cannot import demo preview images, Workspaces component is not installed.</Trace>
+                </Else>
+              </IfComponentExists>
+            </Then>
+            <Else>
+              <Trace>Cannot import demo preview images, the demo workspace or library is missing. Please install the Workspaces component with demo content first.</Trace>
+            </Else>
+          </IfContentExists>
+        </Then>
+      </If>
+      
+    </Phase>
+  </Steps>
+</Package>

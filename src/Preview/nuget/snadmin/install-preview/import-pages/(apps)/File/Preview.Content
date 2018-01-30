@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentMetaData>
+  <ContentType>Page</ContentType>
+  <ContentName>Preview</ContentName>
+  <Fields>
+    <PageTemplateNode>
+      <Path>/Root/Global/pagetemplates/sn-layout-viewer.html</Path>
+    </PageTemplateNode>
+    <PersonalizationSettings attachment="Preview.PersonalizationSettings" />
+    <DisplayName><![CDATA[$Action,Preview]]></DisplayName>
+    <Scenario><![CDATA[ListItem]]></Scenario>
+    <Icon><![CDATA[Page]]></Icon>
+    <RequiredPermissions>See;Preview</RequiredPermissions>
+  </Fields>
+  <Permissions>
+    <Clear />
+    <Identity path="/Root/IMS/BuiltIn/Portal/IdentifiedUsers">
+      <RunApplication>Allow</RunApplication>
+    </Identity>
+  </Permissions>
+</ContentMetaData>

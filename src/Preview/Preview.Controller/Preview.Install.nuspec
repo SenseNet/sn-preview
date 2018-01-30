@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SenseNet.Preview.Install</id>
+    <version>7.0.0</version>
+    <title>sensenet ECM Preview installer</title>
+    <authors>kavics,aniko,laci,borsi,lajos,tusmester</authors>
+    <owners>Sense/Net</owners>
+    <licenseUrl>https://github.com/SenseNet/sn-preview/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/SenseNet/sn-preview</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/SenseNet/sn-resources/master/images/sn-icon/sensenet-icon-64.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>sensenet ECM Preview installer contains the install content for the Preview functionality in sensenet ECM. This package should be installed only in a single web project.</description>
+    <releaseNotes>See release notes on GitHub.</releaseNotes>
+    <copyright>Copyright © Sense/Net Inc.</copyright>
+    <tags>sensenet ecm ecms preview</tags>
+    <dependencies>
+      <dependency id="SenseNet.Services.Install" version="7.0.0" />
+      <dependency id="SenseNet.SnAdmin" version="1.4.3" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\nuget\readme.txt" target="" />
+    <file src="..\nuget\content\**" target="content" />
+    <file src="bin\Release\SenseNet.Preview.Controller.*" target="lib\net451" />
+  </files>
+</package>
