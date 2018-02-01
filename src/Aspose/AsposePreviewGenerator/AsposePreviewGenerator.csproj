@@ -107,6 +107,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\AsposePreviewProvider\Aspose.Total.lic">
+      <Link>Aspose.Total.lic</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
