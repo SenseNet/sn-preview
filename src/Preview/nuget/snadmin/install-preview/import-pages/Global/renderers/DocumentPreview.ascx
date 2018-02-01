@@ -63,7 +63,7 @@
                 canPreviewWithoutWatermark: '<%= canPreviewWithoutWatermark %>',
                 canPreviewWithoutRedaction: '<%= canPreviewWithoutRedaction %>',
                 shapes: '<%=GetValue("Shapes") %>',
-                pageAttributes: '<%=GetValue("pageAttributes")%>',
+                pageAttributes: '<%=GetValue("PageAttributes")%>',
                 ext: '<%= ext %>',
                 IsHeadOnly: '<%= file.IsHeadOnly%>',
                 IsPreviewOnly: '<%= file.IsPreviewOnly %>',

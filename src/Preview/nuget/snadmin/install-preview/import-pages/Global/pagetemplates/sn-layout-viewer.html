@@ -1,4 +1,4 @@
-<% String snLang = SenseNet.Portal.Virtualization.PortalContext.Current.Site.Language; %>
+﻿<% string snLang = SenseNet.Portal.Virtualization.PortalContext.Current?.Site?.Language ?? "en-us"; %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="<%=snLang%>" xml:lang="<%=snLang%>">
 <head>
@@ -14,7 +14,7 @@
     
 </head>
 <body class="sn-body sn-layout3 sn-layout-inter sn-layout-inter-index sn-inter-<%=snLang%> <%= SenseNet.Portal.UI.UITools.GetPageModeClass() %>">
-    <% String snLang = SenseNet.Portal.Virtualization.PortalContext.Current.Site.Language; %>
+<% string snLang = SenseNet.Portal.Virtualization.PortalContext.Current?.Site?.Language ?? "en-us"; %>
     <sn:cssrequest csspath="$skin/styles/jqueryui/jquery-ui.css" id="pageTemplateUIStyleReq"
         runat="server" />
         <sn:CssRequest CSSPath="$skin/styles/jqueryui/jquery-ui-sntheme.css" ID="pageTemplateUIStyleReq2" runat="server" />
