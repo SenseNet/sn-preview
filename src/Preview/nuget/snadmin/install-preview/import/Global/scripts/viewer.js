@@ -29,10 +29,10 @@
                 parentPath = decodeURIComponent(decodeURIComponent(parentPathArray[0]));
             }
             else {
-                parentPath = $('.currentparent').val();
+                parentPath = SN.Context.currentContent.path.substr(SN.Context.currentContent.path.lastIndexOf('/') + 1) + '$';
             }
 
-            var content = $('.currentnode').val();
+            var content = SN.Context.currentContent.name;
             var previewCount = 0;
             var wm = false;
             var loadingString = options.loadingString;
@@ -72,7 +72,7 @@
             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB10/i.test(navigator.userAgent))
                 touch = true;
 
-            var currentuser = odata.getItemUrl($(".currentuser").val());
+            var currentuser = odata.getItemUrl(SN.Context.currentUser.path);
 
             var noPreviewText = "No preview!";
 

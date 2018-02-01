@@ -46,10 +46,6 @@
 
 <div id="<%= this.ClientID %>">
 </div>
-<input type="hidden" class="currentcontent" value='<%= SenseNet.Portal.Virtualization.PortalContext.Current.ContextNodePath %>' />
-<input type="hidden" class="currentparent" value='<%= SenseNet.Portal.Virtualization.PortalContext.Current.ContextNode.ParentPath %>' />
-<input type="hidden" class="currentnode" value='<%= SenseNet.Portal.Virtualization.PortalContext.Current.ContextNode.Name %>' />
-<input type="hidden" class="currentuser" value='<%= User.Current.Path %>' />
 <sn:ScriptRequest runat="server" Path="$skin/scripts/SN/SN.Util.js" />
 <script type="text/javascript">
 
