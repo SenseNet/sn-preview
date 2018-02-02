@@ -6,12 +6,14 @@ This article is **for developers** about installing the **Preview** component fo
 
 ![sensenet Preview](https://github.com/SenseNet/sn-resources/raw/master/images/sn-components/sn-components_preview.png "sensenet Preview")
 
-## The Preview package
+## The SenseNet.Preview.Install package
 This component contains the preview modules needed in sensenet ECM to **access and display** preview images. It also contains the mechanism for **initiating preview generation**, when it is available.
 
-> This package **does not contain** the task executor tool for actually generating preview images, because the tool offered by Sense/Net Inc. uses the [Aspose](http://aspose.com) libraries that cannot be published here.
+> This package **does not contain** the task executor tool for actually generating preview images, because the tool offered by Sense/Net Inc. uses the [Aspose](http://aspose.com) libraries that cannot be published here. The source code written by us however is available here.
 
 This means that even community customers can install the Preview component and display preview images using the **Document Viewer**, if they create their own *custom tool* for generating preview images.
+
+> This package also contains demo files and pre-generated preview images so that you can install and try it freely, without having to buy the sensenet ECM or [Aspose](http://aspose.com) licence.
 
 ## The Aspose package
 There is a separate NuGet package that contains the preview generator tool and other server-side modules needed for generating preview images. It is built using the [Aspose](http://aspose.com) libraries and it is available only from a private sensenet ECM NuGet feed. 
@@ -39,9 +41,11 @@ To get started, stop your web site and install the preview package the usual way
 .\snadmin install-preview
 ```
 
+Optionally, if you have installed the *WebPages* and *Workspaces* components, you may add the usual `importdemo:true` parameter to the line above. That will give you a couple of pregenerated preview images for trying out the feature (you will be able to find them in the Budapest document workspace in the Content Repository).
+
 ### Install the Aspose component
 
-> Accessible for Enterprise customers.
+> Accessible for **Enterprise** customers.
 
 1. Open a command line and go to the *[web]\Admin\bin* folder of your project.
 2. Execute the install-preview-aspose command with the SnAdmin tool.

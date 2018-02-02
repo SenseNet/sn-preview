@@ -1,6 +1,10 @@
 # Document preview for the sensenet ECM platform.
-In this repository you'll find preview-related server-side modules for the [sensenet ECM](https://github.com/SenseNet/sensenet) platform.
+In this repository you'll find preview-related modules for the [sensenet ECM](https://github.com/SenseNet/sensenet) platform.
 
 [![NuGet](https://img.shields.io/nuget/v/SenseNet.Preview.svg)](https://www.nuget.org/packages/SenseNet.Preview)
 
-Currently only the base library containing common preview-related interfaces is available. In the future we will upload here all the public modules of the preview component.
+## Installation
+About the contents of Preview packages and how to install them, please visit the [install guide](/docs/install-preview-from-nuget.md).
+
+## For developers
+This repository contains the source code of all preview components, but does not contain the [Aspose](http://aspose.com) libraries and licence file necessary for compiling the projects. Please visit [www.aspose.com](http://aspose.com) for downloading a trial version if you want to experiment with these packages.
