@@ -187,7 +187,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AsposePreview.nuspec" />
+    <None Include="Aspose.Total.lic">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AsposePreviewProvider.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

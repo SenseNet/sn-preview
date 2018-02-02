@@ -17,7 +17,7 @@ if (Test-Path "$srcPath\Aspose\AsposePreviewProvider\bin\Release\SenseNet.Previe
 {
 	New-Item $installFolderAspose -Force -ItemType Directory
 	Compress-Archive -Path "$srcPath\Aspose\nuget\snadmin\install-aspose\*" -Force -CompressionLevel Optimal -DestinationPath $installPackagePathAspose
-	nuget pack $srcPath\Aspose\AsposePreviewProvider\AsposePreview.nuspec -properties Configuration=Release -OutputDirectory $PSScriptRoot
+	nuget pack $srcPath\Aspose\AsposePreviewProvider\AsposePreviewProvider.nuspec -properties Configuration=Release -OutputDirectory $PSScriptRoot
 }
 else
 {

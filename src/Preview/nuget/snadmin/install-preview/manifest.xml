@@ -1,6 +1,6 @@
 <Package type='Install'>
   <Id>SenseNet.Preview</Id>
-  <Description>sensenet ECM Preview Generator 7.0</Description>
+  <Description>sensenet ECM Preview Generator and Document Viewer</Description>
   <ReleaseDate>2018-01-29</ReleaseDate>
   <Version>7.0.0</Version>
   <Dependencies>
