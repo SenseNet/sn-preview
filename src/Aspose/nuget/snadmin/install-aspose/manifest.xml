@@ -1,0 +1,59 @@
+<Package type='Install'>
+  <Id>SenseNet.Preview.Aspose</Id>
+  <Description>sensenet ECM Preview Aspose</Description>
+  <ReleaseDate>2018-01-29</ReleaseDate>
+  <Version>7.0.0</Version>
+  <Dependencies>
+    <Dependency id='SenseNet.Services' minVersion='7.0.0' />
+    <Dependency id='SenseNet.Preview' minVersion='7.0.0' />
+  </Dependencies>
+  <Steps>
+    <Phase>
+
+      <IfXmlNodeExists file="./web.config" xpath="/configuration/configSections/sectionGroup[@name='sensenet']/section[@name='providers']">
+        <Else>
+          <AppendXmlFragment file="./web.config" xpath="/configuration/configSections/sectionGroup[@name='sensenet']">
+            <Source>
+              <section name="providers" type="System.Configuration.NameValueSectionHandler" />
+            </Source>
+          </AppendXmlFragment>
+        </Else>
+      </IfXmlNodeExists>
+
+      <IfXmlNodeExists file="./web.config" xpath="/configuration/sensenet/providers">
+        <Else>
+          <AppendXmlFragment file="./web.config" xpath="/configuration/sensenet">
+            <Source>
+              <providers />
+            </Source>
+          </AppendXmlFragment>
+        </Else>
+      </IfXmlNodeExists>
+      
+      <IfXmlNodeExists file="./web.config" xpath="/configuration/sensenet/providers/add[@key='DocumentPreviewProvider']">
+        <Else>
+          <AppendXmlFragment file="./web.config" xpath="/configuration/sensenet/providers">
+            <Source>
+              <add key="DocumentPreviewProvider" value="SenseNet.Preview.AsposePreviewProvider" />
+            </Source>
+          </AppendXmlFragment>
+        </Else>
+      </IfXmlNodeExists>
+
+      <EditXmlNodes file="./web.config" xpath="/configuration/sensenet/providers/add[@key='DocumentPreviewProvider']/@value">
+        <Source>SenseNet.Preview.AsposePreviewProvider</Source>
+      </EditXmlNodes>
+
+      <StartRepository startWorkflowEngine="false" />
+      
+      <EditJson Path="/Root/System/Settings/Indexing.settings">
+        {
+        TextExtractors: {
+          "pdf": "SenseNet.Preview.AsposePdfTextExtractor",
+          "rtf": "SenseNet.Preview.AsposeRtfTextExtractor"
+        }
+      </EditJson>
+      
+    </Phase>
+  </Steps>
+</Package>

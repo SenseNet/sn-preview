@@ -1,0 +1,324 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Resources>
+  <ResourceClass name="DocViewer">
+    <Languages>
+      <Language cultureName="en">
+        <data name="DocViewer-Close" xml:space="preserve">
+          <value>Close viewer</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose" xml:space="preserve">
+          <value>Are you sure to close the viewer? You have unburnt changes. Burn them now?</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-SaveAndClose" xml:space="preserve">
+          <value>Burn and close</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-DiscardAndClose" xml:space="preserve">
+          <value>Discard and close</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-DontClose" xml:space="preserve">
+          <value>Don't close</value>
+        </data>
+        <data name="DocViewer-EditAnnotation-Title" xml:space="preserve">
+          <value>Edit annotation</value>
+        </data>
+        <data name="DocViewer-toolbarNotes" xml:space="preserve">
+          <value>Edit annotations</value>
+      </data>
+        <data name="DocViewer-toolbarPrint" xml:space="preserve">
+          <value>Print the document</value>
+      </data>
+        <data name="DocViewer-toolbarHighlight" xml:space="preserve">
+          <value>Edit highlight</value>
+      </data>
+        <data name="DocViewer-toolbarRedaction" xml:space="preserve">
+          <value>Edit redaction</value>
+      </data>
+        <data name="DocViewer-toolbarFirstPage" xml:space="preserve">
+          <value>Go to first page</value>
+      </data>
+        <data name="DocViewer-toolbarPreviousPage" xml:space="preserve">
+          <value>Go to previous page</value>
+      </data>
+        <data name="DocViewer-toolbarNextPage" xml:space="preserve">
+          <value>Go to next page</value>
+      </data>
+        <data name="DocViewer-toolbarLastPage" xml:space="preserve">
+          <value>Go to last page</value>
+      </data>
+        <data name="DocViewer-toolbarFitWindow" xml:space="preserve">
+          <value>Fit document to viewer</value>
+      </data>
+        <data name="DocViewer-toolbarFitWidth" xml:space="preserve">
+          <value>Fit document to viewer width</value>
+      </data>
+        <data name="DocViewer-toolbarFitHeight" xml:space="preserve">
+          <value>Fit document to viewer height</value>
+      </data>
+        <data name="DocViewer-toolbarZoomOut" xml:space="preserve">
+          <value>Zoom out</value>
+      </data>
+        <data name="DocViewer-toolbarZoomIn" xml:space="preserve">
+          <value>Zoom in</value>
+      </data>
+        <data name="DocViewer-toolbarRubberBandZoom" xml:space="preserve">
+          <value>Rubberband zoom</value>
+      </data>
+        <data name="DocViewer-toolbarFullscreen" xml:space="preserve">
+          <value>Switch to full screen mode</value>
+      </data>
+        <data name="DocViewer-toolbarExitFullscreen" xml:space="preserve">
+          <value>Exit full screen mode</value>
+      </data>
+        <data name="DocViewer-toolbarShowShapes" xml:space="preserve">
+          <value>Show document with shapes</value>
+      </data>
+        <data name="DocViewer-toolbarHideShapes" xml:space="preserve">
+          <value>Hide shapes</value>
+      </data>
+        <data name="DocViewer-toolbarShowWatermark" xml:space="preserve">
+          <value>Show document with watermark</value>
+      </data>
+        <data name="DocViewer-toolbarHideWatermark" xml:space="preserve">
+          <value>Hide watermark</value>
+      </data>
+        <data name="DocViewer-toolbarBurn" xml:space="preserve">
+          <value>Burn shapes</value>
+      </data>
+        <data name="DocViewer-annotationDefaultText" xml:space="preserve">
+          <value>Double click to edit text</value>
+      </data>
+        <data name="DocViewer-page" xml:space="preserve">
+          <value>Page</value>
+      </data>
+        <data name="DocViewer-showThumbnails" xml:space="preserve">
+          <value>Show thumbnails</value>
+      </data>
+        <data name="DocViewer-deleteText" xml:space="preserve">
+          <value>Delete</value>
+      </data>
+        <data name="DocViewer-saveText" xml:space="preserve">
+          <value>Save</value>
+      </data>
+        <data name="DocViewer-cancelText" xml:space="preserve">
+          <value>Cancel</value>
+      </data>
+        <data name="DocViewer-originalSize" xml:space="preserve">
+          <value>Original size</value>
+      </data>
+        <data name="DocViewer-downloadDocument" xml:space="preserve">
+          <value>Download document</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotatePageLeft" xml:space="preserve">
+          <value>Rotate current page left</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotatePageRight" xml:space="preserve">
+          <value>Rotate current page right</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotateDocLeft" xml:space="preserve">
+          <value>Rotate document left</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotateDocRight" xml:space="preserve">
+          <value>Rotate document right</value>
+      </data>
+        <data name="DocViewer-burnSuccessful" xml:space="preserve">
+          <value>Shapes  burned to the document successfully!</value>
+      </data>
+        <data name="DocViewer-cantPrint" xml:space="preserve">
+          <value>Sorry, we can't print the document in your current web browser.</value>
+      </data>
+        <data name="DocViewer-documentClosedInfo" xml:space="preserve">
+          <value>You spent a total of <b>{0}</b> seconds time on the document <b>{1}</b>.</value>
+      </data>
+        <data name="DocViewer-pageTimeInfo" xml:space="preserve">
+          <value>page {0}: {1} seconds</value>
+      </data>
+        <data name="MessageBox-Success" xml:space="preserve">
+          <value>Success!</value>
+      </data>
+        <data name="DocViewer-burnSuccessful" xml:space="preserve">
+          <value>Shapes  burned to the document successfully!</value>
+      </data>
+        <data name="MessageBox-Information" xml:space="preserve">
+          <value>Information!</value>
+      </data>
+        <data name="generatingPreview" xml:space="preserve">
+          <value>Generating preview...<br /><span>This could take a few moments</span></value>
+      </data>
+        <data name="emptyDocumentMessage" xml:space="preserve">
+          <value>No preview available, because the document is empty!</value>
+      </data>
+        <data name="extensionFailureMessage" xml:space="preserve">
+          <value>No preview available, because this type of file is not supported!</value>
+      </data>
+        <data name="uploadFailureMessage" xml:space="preserve">
+          <value>Error during preview generation! No preview available.</value>
+      </data>
+        <data name="noPreviewProviderEnabledMessage" xml:space="preserve">
+          <value>Document Preview Generation is not available.</value>
+      </data>
+      </Language>
+      <Language cultureName="hu">
+        <data name="DocViewer-Close" xml:space="preserve">
+          <value>Bezárás</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose" xml:space="preserve">
+          <value>Biztosan bezárja a dokumentum nézegetőt? Vannak nem mentett változtatásai. Elmenti őket most?</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-SaveAndClose" xml:space="preserve">
+          <value>Mentés és bezárás</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-DiscardAndClose" xml:space="preserve">
+          <value>Bezárás mentés nélkül</value>
+        </data>
+        <data name="DocViewer-AreYouSureToClose-DontClose" xml:space="preserve">
+          <value>Mégsem</value>
+        </data>
+        <data name="DocViewer-EditAnnotation-Title" xml:space="preserve">
+          <value>Megjegyzések szerkesztése</value>
+        </data>
+        <data name="DocViewer-toolbarNotes" xml:space="preserve">
+          <value>Megjegyzések szerkesztése</value>
+      </data>
+        <data name="DocViewer-toolbarPrint" xml:space="preserve">
+          <value>Nyomtatás</value>
+      </data>
+        <data name="DocViewer-toolbarHighlight" xml:space="preserve">
+          <value>Kiemelés szerkesztése</value>
+      </data>
+        <data name="DocViewer-toolbarRedaction" xml:space="preserve">
+          <value>Edit redaction</value>
+      </data>
+        <data name="DocViewer-toolbarFirstPage" xml:space="preserve">
+          <value>Első oldalra</value>
+      </data>
+        <data name="DocViewer-toolbarPreviousPage" xml:space="preserve">
+          <value>Előző oldalra</value>
+      </data>
+        <data name="DocViewer-toolbarNextPage" xml:space="preserve">
+          <value>Következő oldalra</value>
+      </data>
+        <data name="DocViewer-toolbarLastPage" xml:space="preserve">
+          <value>Utolsó oldalra</value>
+      </data>
+        <data name="DocViewer-toolbarFitWindow" xml:space="preserve">
+          <value>Méretezés a nézegetőhöz</value>
+      </data>
+        <data name="DocViewer-toolbarFitWidth" xml:space="preserve">
+          <value>Méretezés a nézegető szélességéhez</value>
+      </data>
+        <data name="DocViewer-toolbarFitHeight" xml:space="preserve">
+          <value>Méretezés a nézegető magasságához</value>
+      </data>
+        <data name="DocViewer-toolbarZoomOut" xml:space="preserve">
+          <value>Kicsinyítés</value>
+      </data>
+        <data name="DocViewer-toolbarZoomIn" xml:space="preserve">
+          <value>Nagyítás</value>
+      </data>
+        <data name="DocViewer-toolbarRubberBandZoom" xml:space="preserve">
+          <value>Rugalmas nagyítás</value>
+      </data>
+        <data name="DocViewer-toolbarFullscreen" xml:space="preserve">
+          <value>Teljes képernyős mód</value>
+      </data>
+        <data name="DocViewer-toolbarExitFullscreen" xml:space="preserve">
+          <value>Kilépés teljes képernyős módból</value>
+      </data>
+        <data name="DocViewer-toolbarShowShapes" xml:space="preserve">
+          <value>Mutassa a megjegyzéseket, kiemeléseket</value>
+      </data>
+        <data name="DocViewer-toolbarHideShapes" xml:space="preserve">
+          <value>Rejtse el a megjegyzéseket, kiemeléseket</value>
+      </data>
+        <data name="DocViewer-toolbarShowWatermark" xml:space="preserve">
+          <value>Mutassa a vízjelet</value>
+      </data>
+        <data name="DocViewer-toolbarHideWatermark" xml:space="preserve">
+          <value>Rejtse el a vízjelet</value>
+      </data>
+        <data name="DocViewer-toolbarBurn" xml:space="preserve">
+          <value>Mentés</value>
+      </data>
+        <data name="DocViewer-toolbarRotatePageLeft" xml:space="preserve">
+          <value>Aktuális oldal forgatása balra</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotatePageRight" xml:space="preserve">
+          <value>Aktuális oldal forgatása jobbra</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotateDocLeft" xml:space="preserve">
+          <value>Dokumentum forgatása balra</value>
+      </data>
+
+        <data name="DocViewer-toolbarRotateDocRight" xml:space="preserve">
+          <value>Dokumentum forgatása jobbra</value>
+      </data>
+        <data name="DocViewer-annotationDefaultText" xml:space="preserve">
+          <value>Jelölje ki a megjegyzést, jobb egérgomb kattintással szerkesztheti</value>
+      </data>
+        <data name="DocViewer-page" xml:space="preserve">
+          <value>Oldal</value>
+      </data>
+        <data name="DocViewer-showThumbnails" xml:space="preserve">
+          <value>Mutassa az előnézeti képeket</value>
+      </data>
+        <data name="DocViewer-deleteText" xml:space="preserve">
+          <value>Törlés</value>
+      </data>
+        <data name="DocViewer-saveText" xml:space="preserve">
+          <value>Mentés</value>
+      </data>
+        <data name="DocViewer-cancelText" xml:space="preserve">
+          <value>Mégsem</value>
+      </data>
+        <data name="DocViewer-originalSize" xml:space="preserve">
+          <value>Eredeti méret</value>
+      </data>
+        <data name="DocViewer-downloadDocument" xml:space="preserve">
+          <value>Dokumentum letöltése</value>
+      </data>
+        <data name="DocViewer-burnSuccessful" xml:space="preserve">
+          <value>A dokumentumot sikeresen elmentette!</value>
+      </data>
+        <data name="DocViewer-cantPrint" xml:space="preserve">
+          <value>A dokumentum sajnos az ön jelenlegi böngészőjéből nem nyomtatható.</value>
+      </data>
+        <data name="DocViewer-documentClosedInfo" xml:space="preserve">
+          <value>You spent a total of <b>{0}</b> seconds time on the document <b>{1}</b>.</value>
+      </data>
+        <data name="DocViewer-pageTimeInfo" xml:space="preserve">
+          <value>page {0}: {1} seconds</value>
+      </data>
+        <data name="MessageBox-Success" xml:space="preserve">
+          <value></value>
+      </data>
+        <data name="DocViewer-burnSuccessful" xml:space="preserve">
+          <value>A mentés sikeres volt!</value>
+      </data>
+        <data name="MessageBox-Information" xml:space="preserve">
+          <value>Információ!</value>
+      </data>
+        <data name="generatingPreview" xml:space="preserve">
+          <value>Előnézeti kép generálása...<br /><span>Ez eltarthat néhány másodpercig</span></value>
+      </data>
+        <data name="emptyDocumentMessage" xml:space="preserve">
+          <value>Előnézeti kép nem elérhető, mert a dokumentum üres!</value>
+      </data>
+        <data name="extensionFailureMessage" xml:space="preserve">
+          <value>Előnézeti kép nem elérhető, mert fájl típusa nem támogatott!</value>
+      </data>
+        <data name="uploadFailureMessage" xml:space="preserve">
+          <value>Hiba történt az előnézeti kép(ek) generálása során! Előnézeti kép nem elérhető.</value>
+      </data>
+        <data name="noPreviewProviderEnabledMessage" xml:space="preserve">
+          <value>Az előnézeti képek generálása nem elérhető.</value>
+      </data>
+      </Language>
+    </Languages>
+  </ResourceClass>
+</Resources>

@@ -1,0 +1,12 @@
+{
+	WatermarkEnabled: true,
+	WatermarkFont: "Microsoft Sans Serif",
+	WatermarkBold: true,
+	WatermarkItalic: false,
+	WatermarkFontSize: 72,
+	WatermarkColor: "#000000",
+	WatermarkOpacity: 50,
+	WatermarkPosition: "BottomLeftToUpperRight",
+	WatermarkText: "Watermark - @@CurrentDate@@",
+	MaxPreviewCount: 10
+}
