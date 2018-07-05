@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SenseNet.Preview
+﻿namespace SenseNet.Preview
 {
     internal static class SR
     {
@@ -14,6 +8,5 @@ namespace SenseNet.Preview
         }
 
         internal static string UnknownProvider_1 = "Unknown IPreviewImageGenerator for file extension '{0}'.";
-
     }
 }
