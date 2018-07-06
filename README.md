@@ -1,5 +1,5 @@
-# Document preview for the sensenet ECM platform.
-In this repository you'll find preview-related modules for the [sensenet ECM](https://github.com/SenseNet/sensenet) platform.
+# Document preview for the sensenet platform.
+In this repository you'll find preview-related modules for the [sensenet](https://github.com/SenseNet/sensenet) platform.
 
 [![NuGet](https://img.shields.io/nuget/v/SenseNet.Preview.svg)](https://www.nuget.org/packages/SenseNet.Preview)
 
