@@ -120,9 +120,8 @@
     <Reference Include="SenseNet.Storage, Version=7.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Services.7.2.0\lib\net461\SenseNet.Storage.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.TaskManagement.Core, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.TaskManagement.Core.1.1.0.0\lib\net45\SenseNet.TaskManagement.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SenseNet.TaskManagement.Core, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.TaskManagement.Core.2.0.0\lib\netstandard2.0\SenseNet.TaskManagement.Core.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.TokenAuthentication, Version=7.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Services.7.2.0\lib\net461\SenseNet.TokenAuthentication.dll</HintPath>
