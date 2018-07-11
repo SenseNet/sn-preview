@@ -1,11 +1,11 @@
 <Package type='Install'>
   <Id>SenseNet.Preview.Aspose</Id>
-  <Description>sensenet ECM Preview Aspose</Description>
-  <ReleaseDate>2018-02-19</ReleaseDate>
-  <Version>7.1.0</Version>
+  <Description>sensenet Preview Aspose</Description>
+  <ReleaseDate>2018-07-06</ReleaseDate>
+  <Version>7.2.0</Version>
   <Dependencies>
-    <Dependency id='SenseNet.Services' minVersion='7.1.0' />
-    <Dependency id='SenseNet.Preview' minVersion='7.0.0' />
+    <Dependency id='SenseNet.Services' minVersion='7.2.0' />
+    <Dependency id='SenseNet.Preview' minVersion='7.1.0' />
   </Dependencies>
   <Steps>
     <Phase>
