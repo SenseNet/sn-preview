@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SenseNet.ContentRepository.Search.Indexing;
@@ -15,11 +15,11 @@ using SenseNet.ContentRepository.Storage;
 using SenseNet.ContentRepository.Storage.Data;
 using SenseNet.ContentRepository.Storage.Data.SqlClient;
 using SenseNet.Diagnostics;
-using SenseNet.Packaging;
 using SenseNet.Packaging.Steps;
 using SenseNet.Preview.Controller;
 using SenseNet.Search;
 using SenseNet.Search.Querying;
+using ExecutionContext = SenseNet.Packaging.ExecutionContext;
 using Retrier = SenseNet.Tools.Retrier;
 
 namespace SenseNet.Preview.Packaging.Steps
@@ -37,37 +37,68 @@ namespace SenseNet.Preview.Packaging.Steps
         public int MaxIndex { get; set; }
         public CleanupMode Mode { get; set; }
 
+        private ExecutionContext _context;
+        private int _folderCount;
+        private int _imageCount;
+
         public override void Execute(ExecutionContext context)
         {
-            var pc = new PreviewCleaner(Path, Mode, MaxIndex, context.Console);
-            pc.Execute();
+            _context = context;
+
+            using (new Timer(state => WriteProgress(), null, 1000, 2000))
+            {
+                var pc = new PreviewCleaner(Path, Mode, MaxIndex);
+                pc.OnFolderDeleted += OnFolderDeleted;
+                pc.OnImageDeleted += OnImageDeleted;
+
+                pc.Execute();
+            }
+
+            WriteProgress();
+            _context?.Console?.WriteLine("");
+        }
+
+        private void WriteProgress()
+        {
+            _context?.Console?.Write($"  Deleted folders: {_folderCount}, images: {_imageCount}                        \r");
+        }
+        private void OnFolderDeleted(object sender, EventArgs eventArgs)
+        {
+            Interlocked.Increment(ref _folderCount);
+        }
+        private void OnImageDeleted(object sender, EventArgs eventArgs)
+        {
+            Interlocked.Increment(ref _imageCount);
         }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class PreviewCleaner
     {
+        public event EventHandler OnFolderDeleted;
+        public event EventHandler OnImageDeleted;
+
         private struct NodeInfo
         {
             public int Id;
             public string Path;
         }
 
-        private static int MaxDegreeOfParallelism = 4;
+        private static readonly int MaxDegreeOfParallelism = 4;
+        private static readonly int BlockCount = 100;
 
         private readonly MemoryCache NodeCache = new MemoryCache("LastNodeVersions");
 
         #region Scripts
 
-        //UNDONE: dynamic TOP parameter?
-        private const string QUERY_PREVIEWFOLDERS_ALL = @"SELECT TOP 100 N.NodeId, N.Path
+        private static readonly string QUERY_PREVIEWFOLDERS_ALL = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
 	AND (N.Path like '%/Previews/V%' OR N.Name = 'Previews')
 	{0}
 ORDER BY N.NodeId";
-        private const string QUERY_PREVIEWFOLDERS_ROOT = @"SELECT TOP 100 N.NodeId, N.Path
+        private static readonly string QUERY_PREVIEWFOLDERS_ROOT = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
@@ -77,8 +108,7 @@ ORDER BY N.NodeId";
 
         private const string EXP_EMPTYFOLDER = @" AND (select count(0) from Nodes where ParentNodeId = N.NodeId) = 0";
 
-        //UNDONE: dynamic TOP parameter?
-        private const string QUERY_PREVIEWIMAGES = @"SELECT TOP 100 N.NodeId FROM Nodes as N 
+        private static readonly string QUERY_PREVIEWIMAGES = @"SELECT TOP " + BlockCount + @" N.NodeId FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'PreviewImage'
     {0}
@@ -89,19 +119,16 @@ ORDER BY N.NodeId";
         //========================================================================================= Properties
 
         private string Path { get; }
-        private TextWriter Console { get; }
         private int MaxIndex { get; }
         private CleanupMode Mode { get; }
 
         //========================================================================================= Constructors
 
-        internal PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.All, 
-            int maxIndex = 0, TextWriter console = null)
+        internal PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.All, int maxIndex = 0)
         {
             Path = path;
             MaxIndex = maxIndex;
             Mode = cleanupMode;
-            Console = console;
         }
 
         //========================================================================================= Public API
@@ -138,10 +165,9 @@ ORDER BY N.NodeId";
             {
                 var message = $"Preview image delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
-                Console?.WriteLine(message);
             }
         }
-        private static bool DeletePreviewImagesBlock(string path, int maxIndex, int minimumNodeId, out int lastDeletedId)
+        private bool DeletePreviewImagesBlock(string path, int maxIndex, int minimumNodeId, out int lastDeletedId)
         {
             lastDeletedId = 0;
 
@@ -149,7 +175,11 @@ ORDER BY N.NodeId";
                 return false;
 
             var workerBlock = new ActionBlock<int>(
-                DeleteContentFromDb,
+                async imageId =>
+                {
+                    await DeleteContentFromDb(imageId);
+                    OnImageDeleted?.Invoke(imageId, EventArgs.Empty);
+                },
                 new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism });
 
             foreach (var image in buffer)
@@ -211,7 +241,6 @@ ORDER BY N.NodeId";
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
-                Console?.WriteLine(message);
             }
         }
         private bool DeletePreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, out int lastDeletedId)
@@ -228,6 +257,7 @@ ORDER BY N.NodeId";
                     if (!keepLastVersions || IsFolderDeletable(node.Path))
                     {
                         await DeleteContentFromDb(node.Id);
+                        OnFolderDeleted?.Invoke(node.Id, EventArgs.Empty);
 
                         if (!string.IsNullOrEmpty(node.Path))
                             pathBag.Add(node.Path);
@@ -300,10 +330,9 @@ ORDER BY N.NodeId";
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
-                Console?.WriteLine(message);
             }
         }
-        private static bool DeleteEmptyPreviewFoldersBlock(string path)
+        private bool DeleteEmptyPreviewFoldersBlock(string path)
         {
             if (!LoadEmptyPreviewFoldersBlock(path, out var buffer))
                 return false;
@@ -313,6 +342,7 @@ ORDER BY N.NodeId";
                 async node =>
                 {
                     await DeleteContentFromDb(node.Id);
+                    OnFolderDeleted?.Invoke(node.Id, EventArgs.Empty);
 
                     if (!string.IsNullOrEmpty(node.Path))
                         pathBag.Add(node.Path);
@@ -364,7 +394,7 @@ ORDER BY N.NodeId";
         #endregion
 
         #region Database operations
-        
+
         private static async Task DeleteContentFromDb(int nodeId)
         {
             await Retrier.RetryAsync(3, 3000, () => DeleteContentFromDbInternalAsync(nodeId), (counter, exc) =>
