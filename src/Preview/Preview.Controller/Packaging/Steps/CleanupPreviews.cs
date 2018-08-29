@@ -84,21 +84,22 @@ namespace SenseNet.Preview.Packaging.Steps
             public string Path;
         }
 
-        private static readonly int MaxDegreeOfParallelism = 4;
+        private static readonly int MaxDegreeOfParallelism = 10;
         private static readonly int BlockCount = 100;
 
-        private readonly MemoryCache NodeCache = new MemoryCache("LastNodeVersions");
+        private readonly MemoryCache LastVersionCache = new MemoryCache("LastNodeVersions");
 
-        #region Scripts
-
-        private static readonly string QUERY_PREVIEWFOLDERS_ALL = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
+        private static class Scripts
+        {
+            internal static readonly string PREVIEWFOLDERS_ALL = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
 	AND (N.Path like '%/Previews/V%' OR N.Name = 'Previews')
 	{0}
 ORDER BY N.NodeId";
-        private static readonly string QUERY_PREVIEWFOLDERS_ROOT = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
+
+            internal static readonly string PREVIEWFOLDERS_ROOT = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
@@ -106,15 +107,30 @@ WHERE T.Name = 'SystemFolder'
 	{0}
 ORDER BY N.NodeId";
 
-        private const string EXP_EMPTYFOLDER = @" AND (select count(0) from Nodes where ParentNodeId = N.NodeId) = 0";
+            internal const string EMPTYFOLDER =
+                @" AND (select count(0) from Nodes where ParentNodeId = N.NodeId) = 0";
 
-        private static readonly string QUERY_PREVIEWIMAGES = @"SELECT TOP " + BlockCount + @" N.NodeId FROM Nodes as N 
+            internal static readonly string PREVIEWIMAGES =
+                @"SELECT TOP " + BlockCount + @" N.NodeId FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'PreviewImage'
     {0}
 ORDER BY N.NodeId";
 
-        #endregion
+            internal static readonly string LASTVERSIONS = @"
+                    SELECT N.NodeId, N.Path, V.VersionId, V.MajorNumber, V.MinorNumber, V.Status, 
+	LastMajor = CASE 
+		WHEN V.VersionId = N.LastMajorVersionId THEN CAST(1 AS BIT)
+		ELSE CAST(0 AS BIT)
+		END,
+	LastMinor = CASE 
+		WHEN V.VersionId = N.LastMinorVersionId THEN CAST(1 AS BIT)
+		ELSE CAST(0 AS BIT)
+		END
+FROM Versions V join Nodes N on V.NodeId = N.NodeId
+WHERE (N.Path = @Path) AND (V.VersionId = N.LastMajorVersionId OR V.VersionId = N.LastMinorVersionId)
+ORDER BY MajorNumber, MinorNumber";
+        }
 
         //========================================================================================= Properties
 
@@ -224,7 +240,7 @@ ORDER BY N.NodeId";
                 parameters.Add(new SqlParameter("@MinimumNodeId", SqlDbType.Int) { Value = minimumNodeId });
             }
 
-            return LoadData(string.Format(QUERY_PREVIEWIMAGES, filters), parameters.ToArray());
+            return LoadData(string.Format(Scripts.PREVIEWIMAGES, filters), parameters.ToArray());
         }
 
         #endregion
@@ -312,8 +328,8 @@ ORDER BY N.NodeId";
             }
 
             var script = keepLastVersions
-                ? string.Format(QUERY_PREVIEWFOLDERS_ALL, filters)
-                : string.Format(QUERY_PREVIEWFOLDERS_ROOT, filters);
+                ? string.Format(Scripts.PREVIEWFOLDERS_ALL, filters)
+                : string.Format(Scripts.PREVIEWFOLDERS_ROOT, filters);
 
             return LoadData(script, parameters.ToArray());
         }
@@ -379,7 +395,7 @@ ORDER BY N.NodeId";
         }
         private static List<NodeInfo> LoadEmptyPreviewFoldersBlockInternal(string path)
         {
-            var filters = new StringBuilder(EXP_EMPTYFOLDER);
+            var filters = new StringBuilder(Scripts.EMPTYFOLDER);
             var parameters = new List<IDataParameter>();
 
             if (!string.IsNullOrEmpty(path))
@@ -388,7 +404,7 @@ ORDER BY N.NodeId";
                 parameters.Add(new SqlParameter("@PathStart", SqlDbType.NVarChar) { Value = path.TrimEnd('/') + "/%" });
             }
 
-            return LoadData(string.Format(QUERY_PREVIEWFOLDERS_ALL, filters), parameters.ToArray());
+            return LoadData(string.Format(Scripts.PREVIEWFOLDERS_ALL, filters), parameters.ToArray());
         }
 
         #endregion
@@ -419,7 +435,51 @@ ORDER BY N.NodeId";
                 SnTrace.Database.Write($"Content {nodeId} DELETED from database.");
             }
         }
-        
+
+        private static Tuple<VersionNumber, VersionNumber> GetLastVersions(string path)
+        {
+            VersionNumber majorVersion = null;
+            VersionNumber minorVersion = null;
+
+            SqlProcedure cmd = null;
+            SqlDataReader reader = null;
+
+            try
+            {
+                cmd = new SqlProcedure
+                {
+                    CommandText = Scripts.LASTVERSIONS,
+                    CommandType = CommandType.Text
+                };
+                cmd.Parameters.Add("@Path", SqlDbType.NVarChar, 450).Value = path;
+                reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var majorNumber = reader.GetInt16(reader.GetOrdinal("MajorNumber"));
+                    var minorNumber = reader.GetInt16(reader.GetOrdinal("MinorNumber"));
+                    var statusCode = reader.GetInt16(reader.GetOrdinal("Status"));
+                    var isLastMajor = reader.GetBoolean(reader.GetOrdinal("LastMajor"));
+                    var isLastMinor = reader.GetBoolean(reader.GetOrdinal("LastMinor"));
+
+                    var versionNumber = new VersionNumber(majorNumber, minorNumber, (VersionStatus)statusCode);
+
+                    if (isLastMajor)
+                        majorVersion = versionNumber;
+                    if (isLastMinor)
+                        minorVersion = versionNumber;
+                }
+
+            }
+            finally
+            {
+                reader?.Dispose();
+                cmd?.Dispose();
+            }
+
+            return new Tuple<VersionNumber, VersionNumber>(majorVersion, minorVersion);
+        }
+
         private static List<NodeInfo> LoadData(string script, params IDataParameter[] parameters)
         {
             var buffer = new List<NodeInfo>();
@@ -483,16 +543,15 @@ ORDER BY N.NodeId";
             var contentPath = path.GetParentPath().GetParentPath();
 
             // get cached last versions for the content if possible
-            if (!(NodeCache.Get(contentPath) is VersionNumber[] versions))
+            if (!(LastVersionCache.Get(contentPath) is VersionNumber[] versions))
             {
-                //UNDONE: custom sql script for getting versions?
-                var contentHead = NodeHead.Get(contentPath);
-                lastMajor = contentHead.GetLastMajorVersion().VersionNumber;
-                lastMinor = contentHead.GetLastMinorVersion().VersionNumber;
+                // not in cache, load from database
+                var versionNumbers = GetLastVersions(contentPath);
+                lastMajor = versionNumbers.Item1;
+                lastMinor = versionNumbers.Item2;
+                versions = new[] {lastMajor, lastMinor};
 
-                versions = new[] { lastMajor, lastMinor };
-
-                NodeCache.Set(contentPath, versions, ObjectCache.InfiniteAbsoluteExpiration);
+                LastVersionCache.Set(contentPath, versions, ObjectCache.InfiniteAbsoluteExpiration);
             }
             else
             {
