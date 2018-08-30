@@ -37,6 +37,9 @@ namespace SenseNet.Preview.Packaging.Steps
         public int MaxIndex { get; set; }
         public CleanupMode Mode { get; set; }
 
+        public int MaxDegreeOfParallelism { get; set; }
+        public int BlockSize { get; set; }
+
         private ExecutionContext _context;
         private int _folderCount;
         private int _imageCount;
@@ -73,7 +76,7 @@ namespace SenseNet.Preview.Packaging.Steps
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal class PreviewCleaner
+    public class PreviewCleaner
     {
         public event EventHandler OnFolderDeleted;
         public event EventHandler OnImageDeleted;
@@ -84,40 +87,36 @@ namespace SenseNet.Preview.Packaging.Steps
             public string Path;
         }
 
-        private static readonly int MaxDegreeOfParallelism = 10;
-        private static readonly int BlockCount = 100;
-
         private readonly MemoryCache LastVersionCache = new MemoryCache("LastNodeVersions");
 
         private static class Scripts
         {
-            internal static readonly string PREVIEWFOLDERS_ALL = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
+            internal const string PREVIEWFOLDERS_ALL = @"SELECT TOP {0} N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
 	AND (N.Path like '%/Previews/V%' OR N.Name = 'Previews')
-	{0}
+	{1}
 ORDER BY N.NodeId";
 
-            internal static readonly string PREVIEWFOLDERS_ROOT = @"SELECT TOP " + BlockCount + @" N.NodeId, N.Path
+            internal const string PREVIEWFOLDERS_ROOT = @"SELECT TOP {0} N.NodeId, N.Path
 FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'SystemFolder'
 	AND (N.Name = 'Previews')
-	{0}
+	{1}
 ORDER BY N.NodeId";
 
             internal const string EMPTYFOLDER =
                 @" AND (select count(0) from Nodes where ParentNodeId = N.NodeId) = 0";
 
-            internal static readonly string PREVIEWIMAGES =
-                @"SELECT TOP " + BlockCount + @" N.NodeId FROM Nodes as N 
+            internal const string PREVIEWIMAGES = @"SELECT TOP {0} N.NodeId FROM Nodes as N 
 INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
 WHERE T.Name = 'PreviewImage'
-    {0}
+    {1}
 ORDER BY N.NodeId";
 
-            internal static readonly string LASTVERSIONS = @"
+            internal const string LASTVERSIONS = @"
                     SELECT N.NodeId, N.Path, V.VersionId, V.MajorNumber, V.MinorNumber, V.Status, 
 	LastMajor = CASE 
 		WHEN V.VersionId = N.LastMajorVersionId THEN CAST(1 AS BIT)
@@ -138,18 +137,25 @@ ORDER BY MajorNumber, MinorNumber";
         private int MaxIndex { get; }
         private CleanupMode Mode { get; }
 
+        private int MaxDegreeOfParallelism { get; }
+        private int BlockSize { get; }
+
         //========================================================================================= Constructors
 
-        internal PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.All, int maxIndex = 0)
+        public PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.All, 
+            int maxIndex = 0, int maxDegreeOfParallelism = 10, int blockSize = 500)
         {
             Path = path;
-            MaxIndex = maxIndex;
+            MaxIndex = Math.Max(0, maxIndex);
             Mode = cleanupMode;
+
+            MaxDegreeOfParallelism = Math.Max(1, maxDegreeOfParallelism);
+            BlockSize = Math.Max(1, blockSize);
         }
 
         //========================================================================================= Public API
 
-        internal void Execute()
+        public void Execute()
         {
             if (Mode != CleanupMode.EmptyFoldersOnly)
             {
@@ -177,17 +183,17 @@ ORDER BY MajorNumber, MinorNumber";
             var blockCount = 0;
             var lastDeletedId = 0;
 
-            while (DeletePreviewImagesBlock(Path, MaxIndex, lastDeletedId, out lastDeletedId))
+            while (DeletePreviewImagesBlock(Path, MaxIndex, lastDeletedId, BlockSize, out lastDeletedId))
             {
                 var message = $"Preview image delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
             }
         }
-        private bool DeletePreviewImagesBlock(string path, int maxIndex, int minimumNodeId, out int lastDeletedId)
+        private bool DeletePreviewImagesBlock(string path, int maxIndex, int minimumNodeId, int blockSize, out int lastDeletedId)
         {
             lastDeletedId = 0;
 
-            if (!LoadPreviewImagesBlock(path, maxIndex, minimumNodeId, out var buffer))
+            if (!LoadPreviewImagesBlock(path, maxIndex, minimumNodeId, blockSize, out var buffer))
                 return false;
 
             var workerBlock = new ActionBlock<int>(
@@ -208,16 +214,16 @@ ORDER BY MajorNumber, MinorNumber";
 
             return true;
         }
-        private static bool LoadPreviewImagesBlock(string path, int maxIndex, int minimumNodeId, out List<NodeInfo> buffer)
+        private static bool LoadPreviewImagesBlock(string path, int maxIndex, int minimumNodeId, int blockSize, out List<NodeInfo> buffer)
         {
             var block = new List<NodeInfo>();
-            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadPreviewImagesBlockInternal(path, maxIndex, minimumNodeId); });
+            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadPreviewImagesBlockInternal(path, maxIndex, minimumNodeId, blockSize); });
 
             buffer = block;
 
             return block.Any();
         }
-        private static List<NodeInfo> LoadPreviewImagesBlockInternal(string path, int maxIndex, int minimumNodeId)
+        private static List<NodeInfo> LoadPreviewImagesBlockInternal(string path, int maxIndex, int minimumNodeId, int blockSize)
         {
             var filters = new StringBuilder();
             var parameters = new List<IDataParameter>();
@@ -240,7 +246,7 @@ ORDER BY MajorNumber, MinorNumber";
                 parameters.Add(new SqlParameter("@MinimumNodeId", SqlDbType.Int) { Value = minimumNodeId });
             }
 
-            return LoadData(string.Format(Scripts.PREVIEWIMAGES, filters), parameters.ToArray());
+            return LoadData(string.Format(Scripts.PREVIEWIMAGES, blockSize, filters), parameters.ToArray());
         }
 
         #endregion
@@ -253,17 +259,17 @@ ORDER BY MajorNumber, MinorNumber";
             var lastDeletedId = 0;
             var keepLastVersions = Mode == CleanupMode.KeepLastVersions;
 
-            while (DeletePreviewFoldersBlock(Path, keepLastVersions, lastDeletedId, out lastDeletedId))
+            while (DeletePreviewFoldersBlock(Path, keepLastVersions, lastDeletedId, BlockSize, out lastDeletedId))
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
             }
         }
-        private bool DeletePreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, out int lastDeletedId)
+        private bool DeletePreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, int blockSize, out int lastDeletedId)
         {
             lastDeletedId = 0;
 
-            if (!LoadPreviewFoldersBlock(path, keepLastVersions, minimumNodeId, out var buffer))
+            if (!LoadPreviewFoldersBlock(path, keepLastVersions, minimumNodeId, blockSize, out var buffer))
                 return false;
 
             var pathBag = new ConcurrentBag<string>();
@@ -302,16 +308,16 @@ ORDER BY MajorNumber, MinorNumber";
 
             return true;
         }
-        private static bool LoadPreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, out List<NodeInfo> buffer)
+        private static bool LoadPreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, int blockSize, out List<NodeInfo> buffer)
         {
             var block = new List<NodeInfo>();
-            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadPreviewFoldersBlockInternal(path, keepLastVersions, minimumNodeId); });
+            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadPreviewFoldersBlockInternal(path, keepLastVersions, minimumNodeId, blockSize); });
 
             buffer = block;
 
             return block.Any();
         }
-        private static List<NodeInfo> LoadPreviewFoldersBlockInternal(string path, bool keepLastVersions, int minimumNodeId)
+        private static List<NodeInfo> LoadPreviewFoldersBlockInternal(string path, bool keepLastVersions, int minimumNodeId, int blockSize)
         {
             var filters = new StringBuilder();
             var parameters = new List<IDataParameter>();
@@ -328,8 +334,8 @@ ORDER BY MajorNumber, MinorNumber";
             }
 
             var script = keepLastVersions
-                ? string.Format(Scripts.PREVIEWFOLDERS_ALL, filters)
-                : string.Format(Scripts.PREVIEWFOLDERS_ROOT, filters);
+                ? string.Format(Scripts.PREVIEWFOLDERS_ALL, blockSize, filters)
+                : string.Format(Scripts.PREVIEWFOLDERS_ROOT, blockSize, filters);
 
             return LoadData(script, parameters.ToArray());
         }
@@ -342,15 +348,15 @@ ORDER BY MajorNumber, MinorNumber";
         {
             var blockCount = 0;
 
-            while (DeleteEmptyPreviewFoldersBlock(Path))
+            while (DeleteEmptyPreviewFoldersBlock(Path, BlockSize))
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
                 SnTrace.Database.Write(message);
             }
         }
-        private bool DeleteEmptyPreviewFoldersBlock(string path)
+        private bool DeleteEmptyPreviewFoldersBlock(string path, int blockSize)
         {
-            if (!LoadEmptyPreviewFoldersBlock(path, out var buffer))
+            if (!LoadEmptyPreviewFoldersBlock(path, blockSize, out var buffer))
                 return false;
 
             var pathBag = new ConcurrentBag<string>();
@@ -384,16 +390,16 @@ ORDER BY MajorNumber, MinorNumber";
 
             return true;
         }
-        private static bool LoadEmptyPreviewFoldersBlock(string path, out List<NodeInfo> buffer)
+        private static bool LoadEmptyPreviewFoldersBlock(string path, int blockSize, out List<NodeInfo> buffer)
         {
             var block = new List<NodeInfo>();
-            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadEmptyPreviewFoldersBlockInternal(path); });
+            Retrier.Retry(3, 1000, typeof(Exception), () => { block = LoadEmptyPreviewFoldersBlockInternal(path, blockSize); });
 
             buffer = block;
 
             return block.Any();
         }
-        private static List<NodeInfo> LoadEmptyPreviewFoldersBlockInternal(string path)
+        private static List<NodeInfo> LoadEmptyPreviewFoldersBlockInternal(string path, int blockSize)
         {
             var filters = new StringBuilder(Scripts.EMPTYFOLDER);
             var parameters = new List<IDataParameter>();
@@ -404,7 +410,7 @@ ORDER BY MajorNumber, MinorNumber";
                 parameters.Add(new SqlParameter("@PathStart", SqlDbType.NVarChar) { Value = path.TrimEnd('/') + "/%" });
             }
 
-            return LoadData(string.Format(Scripts.PREVIEWFOLDERS_ALL, filters), parameters.ToArray());
+            return LoadData(string.Format(Scripts.PREVIEWFOLDERS_ALL, blockSize, filters), parameters.ToArray());
         }
 
         #endregion
