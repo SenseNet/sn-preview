@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
@@ -26,7 +25,7 @@ namespace SenseNet.Preview.Packaging.Steps
 {
     public enum CleanupMode
     {
-        All,
+        AllVersions,
         KeepLastVersions,
         EmptyFoldersOnly
     }
@@ -37,8 +36,8 @@ namespace SenseNet.Preview.Packaging.Steps
         public int MaxIndex { get; set; }
         public CleanupMode Mode { get; set; }
 
-        public int MaxDegreeOfParallelism { get; set; }
-        public int BlockSize { get; set; }
+        public int MaxDegreeOfParallelism { get; set; } = 10;
+        public int BlockSize { get; set; } = 500;
 
         private ExecutionContext _context;
         private int _folderCount;
@@ -50,32 +49,23 @@ namespace SenseNet.Preview.Packaging.Steps
 
             using (new Timer(state => WriteProgress(), null, 1000, 2000))
             {
-                var pc = new PreviewCleaner(Path, Mode, MaxIndex);
-                pc.OnFolderDeleted += OnFolderDeleted;
-                pc.OnImageDeleted += OnImageDeleted;
+                var pc = new PreviewCleaner(Path, Mode, MaxIndex, MaxDegreeOfParallelism, BlockSize);
+                pc.OnFolderDeleted += (s, e) => { Interlocked.Increment(ref _folderCount);};
+                pc.OnImageDeleted += (s, e) => { Interlocked.Increment(ref _imageCount); };
 
                 pc.Execute();
             }
 
             WriteProgress();
-            _context?.Console?.WriteLine("");
+            _context?.Console?.WriteLine();
         }
 
         private void WriteProgress()
         {
             _context?.Console?.Write($"  Deleted folders: {_folderCount}, images: {_imageCount}                        \r");
         }
-        private void OnFolderDeleted(object sender, EventArgs eventArgs)
-        {
-            Interlocked.Increment(ref _folderCount);
-        }
-        private void OnImageDeleted(object sender, EventArgs eventArgs)
-        {
-            Interlocked.Increment(ref _imageCount);
-        }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class PreviewCleaner
     {
         public event EventHandler OnFolderDeleted;
@@ -86,37 +76,31 @@ namespace SenseNet.Preview.Packaging.Steps
             public int Id;
             public string Path;
         }
-
-        private readonly MemoryCache LastVersionCache = new MemoryCache("LastNodeVersions");
-
+        
         private static class Scripts
         {
-            internal const string PREVIEWFOLDERS_ALL = @"SELECT TOP {0} N.NodeId, N.Path
-FROM Nodes as N 
-INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
-WHERE T.Name = 'SystemFolder'
+            internal const string ContentTypeId = "SELECT PropertySetId FROM dbo.SchemaPropertySets WHERE Name = @Name";
+
+            internal const string PreviewFoldersAllVersions = @"SELECT TOP {0} N.NodeId, N.Path FROM Nodes N
+WHERE N.NodeTypeId = @NodeTypeId
 	AND (N.Path like '%/Previews/V%' OR N.Name = 'Previews')
 	{1}
-ORDER BY N.NodeId";
+ORDER BY NodeId";
 
-            internal const string PREVIEWFOLDERS_ROOT = @"SELECT TOP {0} N.NodeId, N.Path
-FROM Nodes as N 
-INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
-WHERE T.Name = 'SystemFolder'
-	AND (N.Name = 'Previews')
+            internal const string PreviewFoldersRoot = @"SELECT TOP {0} NodeId, Path FROM Nodes
+WHERE NodeTypeId = @NodeTypeId
+	AND (Name = 'Previews')
 	{1}
-ORDER BY N.NodeId";
+ORDER BY NodeId";
 
-            internal const string EMPTYFOLDER =
-                @" AND (select count(0) from Nodes where ParentNodeId = N.NodeId) = 0";
+            internal const string EmptyFolder = @" AND NOT EXISTS (select 0 from Nodes where ParentNodeId = N.NodeId)";
 
-            internal const string PREVIEWIMAGES = @"SELECT TOP {0} N.NodeId FROM Nodes as N 
-INNER JOIN dbo.SchemaPropertySets AS T ON N.NodeTypeId = T.PropertySetId
-WHERE T.Name = 'PreviewImage'
+            internal const string PreviewImages = @"SELECT TOP {0} N.NodeId FROM Nodes N
+WHERE N.NodeTypeId = @NodeTypeId
     {1}
 ORDER BY N.NodeId";
 
-            internal const string LASTVERSIONS = @"
+            internal const string LastVersions = @"
                     SELECT N.NodeId, N.Path, V.VersionId, V.MajorNumber, V.MinorNumber, V.Status, 
 	LastMajor = CASE 
 		WHEN V.VersionId = N.LastMajorVersionId THEN CAST(1 AS BIT)
@@ -140,9 +124,21 @@ ORDER BY MajorNumber, MinorNumber";
         private int MaxDegreeOfParallelism { get; }
         private int BlockSize { get; }
 
+        private static readonly Lazy<SnTrace.SnTraceCategory> TraceCategory = new Lazy<SnTrace.SnTraceCategory>(() =>
+        {
+            var trace = SnTrace.Category("CleanupPreviews");
+            trace.Enabled = true;
+            return trace;
+        });
+        private static SnTrace.SnTraceCategory Trace => TraceCategory.Value;
+
+        private MemoryCache _lastVersionCache;
+        private static readonly int SystemFolderTypeId = GetTypeId("SystemFolder");
+        private static readonly int PreviewImageTypeId = GetTypeId("PreviewImage");
+
         //========================================================================================= Constructors
 
-        public PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.All, 
+        public PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.AllVersions, 
             int maxIndex = 0, int maxDegreeOfParallelism = 10, int blockSize = 500)
         {
             Path = path;
@@ -157,6 +153,8 @@ ORDER BY MajorNumber, MinorNumber";
 
         public void Execute()
         {
+            _lastVersionCache = new MemoryCache("LastVersions");
+
             if (Mode != CleanupMode.EmptyFoldersOnly)
             {
                 // Delete folders only if we have to delete:
@@ -172,6 +170,8 @@ ORDER BY MajorNumber, MinorNumber";
             }
 
             DeleteEmptyPreviewFolders();
+
+            _lastVersionCache.Dispose();
         }
 
         //========================================================================================= Internal methods
@@ -186,7 +186,7 @@ ORDER BY MajorNumber, MinorNumber";
             while (DeletePreviewImagesBlock(Path, MaxIndex, lastDeletedId, BlockSize, out lastDeletedId))
             {
                 var message = $"Preview image delete block {blockCount++} finished.";
-                SnTrace.Database.Write(message);
+                Trace.Write(message);
             }
         }
         private bool DeletePreviewImagesBlock(string path, int maxIndex, int minimumNodeId, int blockSize, out int lastDeletedId)
@@ -246,7 +246,9 @@ ORDER BY MajorNumber, MinorNumber";
                 parameters.Add(new SqlParameter("@MinimumNodeId", SqlDbType.Int) { Value = minimumNodeId });
             }
 
-            return LoadData(string.Format(Scripts.PREVIEWIMAGES, blockSize, filters), parameters.ToArray());
+            parameters.Add(new SqlParameter("@NodeTypeId", SqlDbType.Int) { Value = PreviewImageTypeId });
+
+            return LoadData(string.Format(Scripts.PreviewImages, blockSize, filters), parameters.ToArray());
         }
 
         #endregion
@@ -262,7 +264,7 @@ ORDER BY MajorNumber, MinorNumber";
             while (DeletePreviewFoldersBlock(Path, keepLastVersions, lastDeletedId, BlockSize, out lastDeletedId))
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
-                SnTrace.Database.Write(message);
+                Trace.Write(message);
             }
         }
         private bool DeletePreviewFoldersBlock(string path, bool keepLastVersions, int minimumNodeId, int blockSize, out int lastDeletedId)
@@ -297,7 +299,7 @@ ORDER BY MajorNumber, MinorNumber";
             workerBlock.Complete();
             workerBlock.Completion.Wait();
 
-            SnTrace.Index.Write("Removing preview folder block from the index.");
+            Trace.Write("Removing preview folder block from the index.");
 
             IndexManager.IndexingEngine.WriteIndex(pathBag.SelectMany(p => new[]
                 {
@@ -333,9 +335,11 @@ ORDER BY MajorNumber, MinorNumber";
                 parameters.Add(new SqlParameter("@MinimumNodeId", SqlDbType.Int) { Value = minimumNodeId });
             }
 
+            parameters.Add(new SqlParameter("@NodeTypeId", SqlDbType.Int) { Value = SystemFolderTypeId });
+
             var script = keepLastVersions
-                ? string.Format(Scripts.PREVIEWFOLDERS_ALL, blockSize, filters)
-                : string.Format(Scripts.PREVIEWFOLDERS_ROOT, blockSize, filters);
+                ? string.Format(Scripts.PreviewFoldersAllVersions, blockSize, filters)
+                : string.Format(Scripts.PreviewFoldersRoot, blockSize, filters);
 
             return LoadData(script, parameters.ToArray());
         }
@@ -351,7 +355,7 @@ ORDER BY MajorNumber, MinorNumber";
             while (DeleteEmptyPreviewFoldersBlock(Path, BlockSize))
             {
                 var message = $"Preview folder delete block {blockCount++} finished.";
-                SnTrace.Database.Write(message);
+                Trace.Write(message);
             }
         }
         private bool DeleteEmptyPreviewFoldersBlock(string path, int blockSize)
@@ -379,7 +383,7 @@ ORDER BY MajorNumber, MinorNumber";
             workerBlock.Complete();
             workerBlock.Completion.Wait();
 
-            SnTrace.Index.Write("Removing preview folder block from the index.");
+            Trace.Write("Removing preview folder block from the index.");
 
             IndexManager.IndexingEngine.WriteIndex(pathBag.SelectMany(p => new[]
                 {
@@ -401,7 +405,7 @@ ORDER BY MajorNumber, MinorNumber";
         }
         private static List<NodeInfo> LoadEmptyPreviewFoldersBlockInternal(string path, int blockSize)
         {
-            var filters = new StringBuilder(Scripts.EMPTYFOLDER);
+            var filters = new StringBuilder(Scripts.EmptyFolder);
             var parameters = new List<IDataParameter>();
 
             if (!string.IsNullOrEmpty(path))
@@ -410,7 +414,9 @@ ORDER BY MajorNumber, MinorNumber";
                 parameters.Add(new SqlParameter("@PathStart", SqlDbType.NVarChar) { Value = path.TrimEnd('/') + "/%" });
             }
 
-            return LoadData(string.Format(Scripts.PREVIEWFOLDERS_ALL, blockSize, filters), parameters.ToArray());
+            parameters.Add(new SqlParameter("@NodeTypeId", SqlDbType.Int) { Value = SystemFolderTypeId });
+
+            return LoadData(string.Format(Scripts.PreviewFoldersAllVersions, blockSize, filters), parameters.ToArray());
         }
 
         #endregion
@@ -424,7 +430,7 @@ ORDER BY MajorNumber, MinorNumber";
                 if (exc == null)
                     return true;
 
-                SnTrace.Database.WriteError($"Content {nodeId} could not be deleted. {exc.Message}");
+                Trace.WriteError($"Content {nodeId} could not be deleted. {exc.Message}");
                 return false;
             });
         }
@@ -438,7 +444,18 @@ ORDER BY MajorNumber, MinorNumber";
 
                 await proc.ExecuteNonQueryAsync();
 
-                SnTrace.Database.Write($"Content {nodeId} DELETED from database.");
+                Trace.Write($"Content {nodeId} DELETED from database.");
+            }
+        }
+
+        private static int GetTypeId(string contentTypeName)
+        {
+            using (var proc = DataProvider.CreateDataProcedure(Scripts.ContentTypeId))
+            {
+                proc.CommandType = CommandType.Text;
+                proc.Parameters.Add(new SqlParameter("@Name", SqlDbType.VarChar, 450) {Value = contentTypeName});
+
+                return (int)proc.ExecuteScalar();
             }
         }
 
@@ -454,7 +471,7 @@ ORDER BY MajorNumber, MinorNumber";
             {
                 cmd = new SqlProcedure
                 {
-                    CommandText = Scripts.LASTVERSIONS,
+                    CommandText = Scripts.LastVersions,
                     CommandType = CommandType.Text
                 };
                 cmd.Parameters.Add("@Path", SqlDbType.NVarChar, 450).Value = path;
@@ -549,7 +566,7 @@ ORDER BY MajorNumber, MinorNumber";
             var contentPath = path.GetParentPath().GetParentPath();
 
             // get cached last versions for the content if possible
-            if (!(LastVersionCache.Get(contentPath) is VersionNumber[] versions))
+            if (!(_lastVersionCache.Get(contentPath) is VersionNumber[] versions))
             {
                 // not in cache, load from database
                 var versionNumbers = GetLastVersions(contentPath);
@@ -557,7 +574,7 @@ ORDER BY MajorNumber, MinorNumber";
                 lastMinor = versionNumbers.Item2;
                 versions = new[] {lastMajor, lastMinor};
 
-                LastVersionCache.Set(contentPath, versions, ObjectCache.InfiniteAbsoluteExpiration);
+                _lastVersionCache.Set(contentPath, versions, ObjectCache.InfiniteAbsoluteExpiration);
             }
             else
             {

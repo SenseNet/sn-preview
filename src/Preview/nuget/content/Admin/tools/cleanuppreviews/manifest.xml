@@ -9,7 +9,7 @@
   <Parameters>
     <Parameter name="@path" description="Subtree path to cleanup preview images for.">/Root</Parameter>
     <Parameter name="@maxIndex" description="Preview images with a bigger index will be deleted.">0</Parameter>
-    <Parameter name="@mode" description="Cleanup mode. Available values: All (default), KeepLastVersions (deletes previews for old versions), EmptyFoldersOnly (only deletes empty preview folders but retains preview images).">All</Parameter>
+    <Parameter name="@mode" description="Cleanup mode. Available values: AllVersions (default), KeepLastVersions (deletes previews for old versions), EmptyFoldersOnly (only deletes empty preview folders but retains preview images).">AllVersions</Parameter>
   </Parameters>
   <Steps>
     <Phase>
