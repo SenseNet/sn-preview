@@ -161,6 +161,31 @@ You can customize the following values here:
 
 > You may have different preview settings on lower levels in your content tree - e.g. under every workspace. See [Settings](/docs/settings) for more details.
 
+## Cleaning up preview images
+There is an [SnAdmin tool](https://community.sensenet.com/docs/snadmin-tools) for deleting unnecessary preview images and preview folders from the content repository. You may use it to shrink the size of your database as preview images for large or many documents tend to occupy lots of space. You have the option to delete preview images:
+
+- in the whole repository or just in a subtree
+- for old document versions or all of them
+- keep only a certain number of images (e.g. the first 5) per file
+- delete only empty preview folders but keep all images
+
+The tool wraps an SnAdmin step that you may use in your own packages:
+
+```xml
+<StartRepository StartWorkflowEngine="false" />
+<CleanupPreviews path="@path" maxIndex="@maxIndex" mode="@mode" />
+```
+
+Available values for the `mode` parameter: 
+
+- **All**: default
+- **KeepLastVersions**: deletes previews for old versions
+- **EmptyFoldersOnly**: only deletes empty preview folders but retains preview images
+
+> This step removes preview images from the database and preview folders from both the db and the index - this is why it needs the **repository started**.
+
+Depending on the number of files in the target subtree this step may run for a while (although it uses direct SQL queries so it is fairly efficient), but it periodically writes the progress to the console.
+
 ## Integrating a custom preview generator
 To integrate a custom document preview generator you'll need to implement your preview provider that will define the supported types and the [custom task](/docs/task-management) that will generate the images. To learn more on this topic read this article:
 
