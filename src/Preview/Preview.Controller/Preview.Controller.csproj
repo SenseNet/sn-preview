@@ -152,9 +152,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContentExtensions.cs" />
     <Compile Include="DocumentPreviewObserver.cs" />
     <Compile Include="Packaging\Steps\CleanupPreviews.cs" />
+    <Compile Include="Packaging\Steps\PreviewCleaner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
