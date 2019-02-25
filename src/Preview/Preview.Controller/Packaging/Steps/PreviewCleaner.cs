@@ -13,7 +13,6 @@ using SenseNet.ContentRepository.Storage;
 using SenseNet.ContentRepository.Storage.Data;
 using SenseNet.ContentRepository.Storage.Data.SqlClient;
 using SenseNet.Diagnostics;
-using SenseNet.Preview.Packaging.Steps;
 using SenseNet.Search;
 using SenseNet.Search.Querying;
 using Retrier = SenseNet.Tools.Retrier;
@@ -390,13 +389,14 @@ ORDER BY MajorNumber, MinorNumber";
         }
         private static async Task DeleteContentFromDbInternalAsync(int nodeId)
         {
-            using (var proc = (SqlProcedure)DataProvider.CreateDataProcedure("proc_Node_DeletePhysical"))
+            using (var proc = DataProvider.Instance.CreateDataProcedure("proc_Node_DeletePhysical")
+                .AddParameter("@NodeId", nodeId)
+                .AddParameter("@Timestamp", DBNull.Value, DbType.Int32))
             {
                 proc.CommandType = CommandType.StoredProcedure;
-                proc.Parameters.Add(new SqlParameter("@NodeId", SqlDbType.Int) { Value = nodeId });
-                proc.Parameters.Add(new SqlParameter("@Timestamp", SqlDbType.Int) { Value = DBNull.Value });
 
-                await proc.ExecuteNonQueryAsync();
+                // assume this is a SQL procedure so we can execute it asynchronously
+                await ((SqlProcedure)proc).ExecuteNonQueryAsync();
 
                 Trace.Write($"Content {nodeId} DELETED from database.");
             }
@@ -404,10 +404,10 @@ ORDER BY MajorNumber, MinorNumber";
 
         private static int GetTypeId(string contentTypeName)
         {
-            using (var proc = DataProvider.CreateDataProcedure(Scripts.ContentTypeId))
+            using (var proc = DataProvider.Instance.CreateDataProcedure(Scripts.ContentTypeId)
+                .AddParameter("@Name", contentTypeName))
             {
                 proc.CommandType = CommandType.Text;
-                proc.Parameters.Add(new SqlParameter("@Name", SqlDbType.VarChar, 450) { Value = contentTypeName });
 
                 return (int)proc.ExecuteScalar();
             }
@@ -461,7 +461,7 @@ ORDER BY MajorNumber, MinorNumber";
         {
             var buffer = new List<NodeInfo>();
 
-            using (var proc = DataProvider.CreateDataProcedure(script))
+            using (var proc = DataProvider.Instance.CreateDataProcedure(script))
             {
                 proc.CommandType = CommandType.Text;
 

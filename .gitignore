@@ -287,8 +287,11 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
+# sensenet
 /src/Preview/nuget/content/Admin/tools/install-preview.zip
 /src/Aspose/nuget/content/Admin/tools/install-preview-aspose.zip
 /src/Aspose/nuget/content/TaskManagement/TaskExecutors/AsposePreviewGenerator
 /src/Aspose/AsposePreviewProvider/Aspose.Total.lic
 /src/Aspose/AsposePreviewGenerator/Aspose.Total.lic
+/tools/scripts/*.nupkg
+/tools/scripts/*.zip

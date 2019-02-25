@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		..\..\tools\scripts\CreateNuGetPackages.ps1 = ..\..\tools\scripts\CreateNuGetPackages.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Preview", "Preview\Preview.csproj", "{01AE54AF-DB4E-431E-A3F9-FBCD2AD73D03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Preview", "Preview\Preview.csproj", "{01AE54AF-DB4E-431E-A3F9-FBCD2AD73D03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Preview.Controller", "Preview.Controller\Preview.Controller.csproj", "{64FFBB21-44DB-4354-9379-757AEBE2FA74}"
 EndProject
