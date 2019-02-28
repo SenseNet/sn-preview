@@ -2,6 +2,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+[assembly: InternalsVisibleTo("SenseNet.Preview.Tests")]
+
 [assembly: AssemblyTrademark("Sense/Net Inc.")]
 
 [assembly: ComVisible(false)]
