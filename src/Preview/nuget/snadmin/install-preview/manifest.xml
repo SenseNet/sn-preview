@@ -2,9 +2,9 @@
   <Id>SenseNet.Preview</Id>
   <Description>sensenet Preview and Document Viewer</Description>
   <ReleaseDate>2018-07-06</ReleaseDate>
-  <Version>7.1.0</Version>
+  <Version>7.1.1</Version>
   <Dependencies>
-    <Dependency id='SenseNet.Services' minVersion='7.2.0' />
+    <Dependency id='SenseNet.Services' minVersion='7.6' />
   </Dependencies>
   <Parameters>
     <Parameter name="@importdemo" description="Import demo content.">false</Parameter>

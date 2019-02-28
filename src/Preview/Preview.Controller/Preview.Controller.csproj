@@ -15,10 +15,10 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>sensenet preview</PackageTags>
     <PackageReleaseNotes>See release notes on GitHub.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Product>sensenet Preview</Product>
     <Description>sensenet Preview installer contains the install content for the Preview functionality in sensenet. This package should be installed only in a single web project.</Description>
-    <RootNamespace>SenseNet.Preview.Controller</RootNamespace>    
+    <RootNamespace>SenseNet.Preview.Controller</RootNamespace>  
   </PropertyGroup>
 
   <ItemGroup>
