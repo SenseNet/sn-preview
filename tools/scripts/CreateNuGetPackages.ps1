@@ -9,7 +9,7 @@ Remove-Item $PSScriptRoot\*.nupkg
 
 Compress-Archive -Path "$srcPath\Preview\nuget\snadmin\install-preview\*" -Force -CompressionLevel Optimal -DestinationPath $installPackagePathPreview
 
-nuget pack $srcPath\Preview\Preview.Controller\Preview.Install.nuspec -properties Configuration=Release -OutputDirectory $PSScriptRoot
+dotnet pack $srcPath\Preview\Preview.Controller\Preview.Controller.csproj -c Release -o $PSScriptRoot
 
 # check if Aspose components are present
 if (Test-Path "$srcPath\Aspose\AsposePreviewProvider\bin\Release\SenseNet.Preview.AsposePreviewProvider.dll")

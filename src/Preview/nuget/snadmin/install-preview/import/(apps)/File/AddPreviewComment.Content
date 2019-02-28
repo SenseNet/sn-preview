@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentMetaData>
+  <ContentType>GenericODataApplication</ContentType>
+  <ContentName>AddPreviewComment</ContentName>
+  <Fields>
+    <ClassName><![CDATA[SenseNet.Preview.Controller.PreviewCommentActions]]></ClassName>
+    <MethodName><![CDATA[AddPreviewComment]]></MethodName>
+    <Parameters><![CDATA[int page, int x, int y, string text]]></Parameters>
+    <ActionTypeName><![CDATA[GenericODataOperation]]></ActionTypeName>
+	<RequiredPermissions>Preview</RequiredPermissions>
+  </Fields>
+  <Permissions>
+    <Clear />
+    <Identity path="/Root/IMS/BuiltIn/Portal/Everyone">
+      <RunApplication>Allow</RunApplication>
+    </Identity>
+	<Identity path="/Root/IMS/BuiltIn/Portal/Visitor">
+      <RunApplication>Allow</RunApplication>
+    </Identity>
+  </Permissions>
+</ContentMetaData>
