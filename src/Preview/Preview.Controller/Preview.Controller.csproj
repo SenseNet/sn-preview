@@ -4,7 +4,7 @@
     <PackageId>SenseNet.Preview.Install</PackageId>
     <AssemblyName>SenseNet.Preview.Controller</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>7.1.1</Version>
+    <Version>7.1.1.1</Version>
     <Authors>kavics,tusmester,aniko,lajos</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
