@@ -7,7 +7,7 @@
     <MethodName><![CDATA[AddPreviewComment]]></MethodName>
     <Parameters><![CDATA[int page, int x, int y, string text]]></Parameters>
     <ActionTypeName><![CDATA[GenericODataOperation]]></ActionTypeName>
-	<RequiredPermissions>Preview</RequiredPermissions>
+	  <RequiredPermissions>Open</RequiredPermissions>
   </Fields>
   <Permissions>
     <Clear />

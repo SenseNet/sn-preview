@@ -7,7 +7,7 @@
     <MethodName><![CDATA[DeletePreviewComment]]></MethodName>
     <Parameters><![CDATA[string id]]></Parameters>
     <ActionTypeName><![CDATA[GenericODataOperation]]></ActionTypeName>
-	<RequiredPermissions>Preview</RequiredPermissions>
+	  <RequiredPermissions>Open</RequiredPermissions>
   </Fields>
   <Permissions>
     <Clear />
