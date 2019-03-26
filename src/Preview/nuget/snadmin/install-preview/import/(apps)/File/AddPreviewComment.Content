@@ -5,7 +5,7 @@
   <Fields>
     <ClassName><![CDATA[SenseNet.Preview.Controller.PreviewCommentActions]]></ClassName>
     <MethodName><![CDATA[AddPreviewComment]]></MethodName>
-    <Parameters><![CDATA[int page, int x, int y, string text]]></Parameters>
+    <Parameters><![CDATA[int page, double x, double y, string text]]></Parameters>
     <ActionTypeName><![CDATA[GenericODataOperation]]></ActionTypeName>
 	  <RequiredPermissions>Open</RequiredPermissions>
   </Fields>

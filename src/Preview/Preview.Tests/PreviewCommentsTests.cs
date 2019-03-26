@@ -113,19 +113,20 @@ namespace Preview.Tests
         {
             const string commentsValue =
                 "[{ \"id\": \"abc\", \"page\": 1, \"x\": 100, \"y\": 100, \"creationDate\": \"2019.02.28. 8:00:00\" }, " +
-                " { \"id\": \"def\", \"page\": 2, \"x\": 30, \"y\": 30,   \"creationDate\": \"2019.02.28. 9:00:00\" }," +
-                " { \"id\": \"ghi\", \"page\": 2, \"x\": 70, \"y\": 70,   \"creationDate\": \"2019.02.28. 5:00:00\" }," +
+                " { \"id\": \"def\", \"page\": 2, \"x\": 30.5, \"y\": 30.5,   \"creationDate\": \"2019.02.28. 9:00:00\" }," +
+                " { \"id\": \"ghi\", \"page\": 2, \"x\": 70.5, \"y\": 70.5,   \"creationDate\": \"2019.02.28. 5:00:00\" }," +
                 " { \"id\": \"jkl\", \"page\": 2, \"x\": 70, \"y\": 70,   \"creationDate\": \"2019.02.28. 6:00:00\" }," +
                 " { \"id\": \"mno\", \"page\": 3, \"x\": 70, \"y\": 70,   \"creationDate\": \"2010.01.01. 1:00:00\" }," +
                 "]";
 
             AssertCommentOrder(2, 20, 20, 1);
             AssertCommentOrder(2, 20, 30, 1);
-            AssertCommentOrder(2, 30, 30, 2);
+            AssertCommentOrder(2, 30.5, 30.5, 2);
+            AssertCommentOrder(2, 30.7, 30.7, 2);
             AssertCommentOrder(2, 50, 50, 2);
-            AssertCommentOrder(2, 70, 90, 4);
+            AssertCommentOrder(2, 70.8, 90, 4);
 
-            void AssertCommentOrder(int page, int x, int y, int expectedIndex)
+            void AssertCommentOrder(int page, double x, double y, int expectedIndex)
             {
                 var comments = PreviewCommentActions.AddPreviewComment(commentsValue, "user", page, x, y, "commentx", out _);
 

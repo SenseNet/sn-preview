@@ -31,9 +31,9 @@ namespace SenseNet.Preview.Controller
         [JsonProperty("page")]
         public int Page { get; set; }
         [JsonProperty("x")]
-        public int X { get; set; }
+        public double X { get; set; }
         [JsonProperty("y")]
-        public int Y { get; set; }
+        public double Y { get; set; }
 
         internal PreviewComment ToPreviewComment()
         {
@@ -56,9 +56,9 @@ namespace SenseNet.Preview.Controller
         [JsonProperty("page")]
         public int Page => Data.Page;
         [JsonProperty("x")]
-        public int X => Data.X;
+        public double X => Data.X;
         [JsonProperty("y")]
-        public int Y => Data.Y;
+        public double Y => Data.Y;
 
         public PreviewComment(PreviewCommentData data)
         {

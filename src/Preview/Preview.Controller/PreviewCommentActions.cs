@@ -25,7 +25,7 @@ namespace SenseNet.Preview.Controller
                 .Select(cd => cd.ToPreviewComment());
         }
         [ODataAction]
-        public static object AddPreviewComment(Content content, int page, int x, int y, string text)
+        public static object AddPreviewComment(Content content, int page, double x, double y, string text)
         {
             AssertCommentFeature(content);
 
@@ -63,7 +63,7 @@ namespace SenseNet.Preview.Controller
                 .Where(c => page < 0 || c["page"].Value<int>() == page)
                 .Select(c => c.ToObject<PreviewCommentData>());
         }
-        internal static JArray AddPreviewComment(string comments, string userName, int page, int x, int y, 
+        internal static JArray AddPreviewComment(string comments, string userName, int page, double x, double y, 
             string text, out PreviewCommentData commentData)
         {
             if (string.IsNullOrEmpty(userName) || page < 0 || x < 0 || y < 0)
@@ -92,11 +92,11 @@ namespace SenseNet.Preview.Controller
             foreach (var jToken in commentsArray)
             {
                 var currentPage = jToken["page"]?.Value<int>() ?? 0;
-                var currentX = jToken["x"]?.Value<int>() ?? 0;
-                var currentY = jToken["y"]?.Value<int>() ?? 0;
+                var currentX = jToken["x"]?.Value<double>() ?? 0;
+                var currentY = jToken["y"]?.Value<double>() ?? 0;
 
                 // current comment comes before the new one
-                if (currentPage < page || currentPage == page && (currentY < y || currentY == y && currentX <= x))
+                if (currentPage < page || currentPage == page && (currentY < y || Math.Abs(currentY - y) < 0.0001 && currentX <= x))
                 {
                     index++;
                     continue;
