@@ -198,7 +198,7 @@ To actually upload the images you may use the built-in [Upload action](http://w
 Deploying the tool
 ------------------
 
-As the tool is a task tool, please read the [following article](http://wiki.sensenet.com/Task_Management#Deploying_the_task_executor "Task Management") about deploying it.
+As the tool is a task tool, please read the [following article](https://github.com/SenseNet/sn-taskmanagement/blob/master/docs/task-management.md "Task Management") about deploying it.
 
 Configuration
 =============
