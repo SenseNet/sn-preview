@@ -179,7 +179,7 @@ Provides properties and methods for context information in a specific generator 
 -   **PreviewsFolderId**: id of the preview folder where images will be saved
 -   **StartIndex**: the page number where we need to start generating images
 -   **MaxPreviewCount**: maximum number of images to generate
--   **PreviewResolution**: [image resolution](http://wiki.sensenet.com/Viewing_documents_in_the_browser#Generator_configuration "Viewing documents in the browser")
+-   **PreviewResolution**: [image resolution](/viewing-documents-in-the-browser.md "Viewing documents in the browser")
 -   **Version**: document version
 -   **SetPageCount**: saves the exact page count to the document back on the portal
 -   **SetIndexes**: helper method to set the final start and stop index for images
