@@ -200,7 +200,7 @@ The tool uses the [OData REST API](https://github.com/SenseNet/sensenet/blob/ma
 -   **SetPageCount**: saves the page count of a document as a metadata field.
 -   **SetInitialPreviewProperties**: a helper method that sets the initial preview image properties necessary for the preview framework to work (e.g. the creator or modifyer user). It is mandatory to call this method after creating a new preview image.
 
-To actually upload the images you may use the built-in [Upload action](http://wiki.sensenet.com/Upload_action "Upload action"). See the example in that article about how to upload image binaries to the portal.
+To actually upload the images you may use the built-in Upload action.
 
 Deploying the tool
 ------------------
