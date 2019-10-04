@@ -1,3 +1,10 @@
+---
+title: "Create a custom document preview generator"
+source_url: 'https://github.com/SenseNet/sn-preview/blob/master/docs/custom-document-preview-generator.md'
+category: Development
+version: v7.0
+tags: [document, preview, preview generator]
+---
 Overview
 ========
 
