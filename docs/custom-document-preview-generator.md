@@ -68,7 +68,7 @@ For additional helper methods available in the base class (e.g. getting preview 
 Restricted preview images
 =========================
 
-It is possible to add restrictions to the displayed preview images. See the [document preview article](http://wiki.sensenet.com/Viewing_documents_in_the_browser#Restrictions_and_annotations "Viewing documents in the browser") for detailed explanation. The built-in document preview provider has a default implementation for serving restricted images, but you can customize that behavior as shown in the following sections.
+It is possible to add restrictions to the displayed preview images. See the [document preview article](/viewing-documents-in-the-browser.md "Viewing documents in the browser") for detailed explanation. The built-in document preview provider has a default implementation for serving restricted images, but you can customize that behavior as shown in the following sections.
 
 Get restricted image stream
 ---------------------------
