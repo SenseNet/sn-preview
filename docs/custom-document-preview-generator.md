@@ -128,7 +128,7 @@ Creating the image generator tool
 
 If you want to use the built-in preview generator shipped with the **Enterprise Edition**, you do not have to create your own generator. This is necessary only in case of the **Community Edition** or if you want to replace the built-in one.
 
-Preview image generation is done using a [task executor tool](http://wiki.sensenet.com/Task_Management#Creating_a_custom_task_executor "Task Management"). This is a command line tool that downloads the document (e.g. a word document), and generates preview images using a 3rd party image generator plugin (e.g. [Aspose](http://www.aspose.com/)).
+Preview image generation is done using a [task executor tool](https://github.com/SenseNet/sn-taskmanagement/task-management.md "Task Management"). This is a command line tool that downloads the document (e.g. a word document), and generates preview images using a 3rd party image generator plugin (e.g. [Aspose](http://www.aspose.com/)).
 
 Adding new extensions (from version 6.3.1 Patch 4)
 --------------------------------------------------
