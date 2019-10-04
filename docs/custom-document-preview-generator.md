@@ -33,7 +33,7 @@ The class can be anywhere in your project as it will be discovered automatically
 Generating images
 =================
 
-The preview provider uses the [Task Management](http://wiki.sensenet.com/Task_Management "Task Management") framework for queueing and managing image generator tasks. The actual preview image generation is done using a command line tool (a task tool), as you can see later in this article
+The preview provider uses the [Task Management](https://github.com/SenseNet/sn-taskmanagement/task-management.md "Task Management") framework for queuing and managing image generator tasks. The actual preview image generation is done using a command line tool (a task tool), as you can see later in this article
 
 In your provider you have to override at least the following methods and properties:
 
