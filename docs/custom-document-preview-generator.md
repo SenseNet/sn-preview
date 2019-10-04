@@ -193,7 +193,7 @@ Provides properties and methods for context information in a specific generator 
 OData API for the image generator
 ---------------------------------
 
-The tool uses the [OData REST API](http://wiki.sensenet.com/OData_REST_API "OData REST API") of Sense/Net to get the necessary information from the portal and upload the generated preview images. The Document Preview Provider has the following **OData API** (OData actions and functions) for this tool:
+The tool uses the [OData REST API](https://github.com/SenseNet/sensenet/blob/master/docs/odata-rest-api.md "OData REST API") of sensenet to get the necessary information from the portal and upload the generated preview images. The Document Preview Provider has the following **OData API** (OData actions and functions) for this tool:
 
 -   **GetPreviewsFolder**: loads or creates the preview folder for the given version of the content. Optionally it can also empty the folder in case a cleanup is needed.
 -   **SetPreviewStatus**: sets the preview status of the document (e.g. Error, NotSupported or InProgress)
