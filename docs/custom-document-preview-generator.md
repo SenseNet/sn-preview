@@ -38,7 +38,7 @@ The preview provider uses the [Task Management](http://wiki.sensenet.com/Task_M
 In your provider you have to override at least the following methods and properties:
 
 -   **IsContentSupported(Node)**: returns if this implementation supports the specified content. This is necessary for performance reasons: the task that will generate images will only start for supported content (e.g. documents, but not Javascript files).
--   **GetPreviewGeneratorTaskName(path)**: this method should return the name of the preview generator task (the name of the command line tool). Please read the [Task Management](http://wiki.sensenet.com/Task_Management "Task Management") article for more details about tasks.
+-   **GetPreviewGeneratorTaskName(path)**: this method should return the name of the preview generator task (the name of the command line tool). Please read the [Task Management](https://github.com/SenseNet/sn-taskmanagement/blob/master/docs/task-management.md "Task Management") article for more details about tasks.
 
 Before version **6.3.1 Patch 4** this is a property; after the patch it is a method that may return a different task name based on the content. This may be useful when you plan to execute certain tasks on dedicated agents.
 
