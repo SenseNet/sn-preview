@@ -91,7 +91,7 @@ The possible return values are the following:
 -   **Redaction**: redactions must be placed onto the document if they exist.
 -   **Watermark**: a watermark must be placed onto the document if it exists.
 
-The built-in document preview provider works with the built-in [preview permissions](http://wiki.sensenet.com/Viewing_documents_in_the_browser#Preview_permissions "Viewing documents in the browser"). You can customize this method for example to check group membership instead:
+The built-in document preview provider works with the built-in [preview permissions](/viewing-documents-in-the-browser.md "Viewing documents in the browser"). You can customize this method for example to check group membership instead:
 
 namespace MyNamespace
 {
