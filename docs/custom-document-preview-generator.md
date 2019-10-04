@@ -42,7 +42,7 @@ In your provider you have to override at least the following methods and propert
 
 Before version **6.3.1 Patch 4** this is a property; after the patch it is a method that may return a different task name based on the content. This may be useful when you plan to execute certain tasks on dedicated agents.
 
-If you only want to integrate a custom preview generator tool, but leave the built-in preview serving mechanism as-is, then your custom provider is done - please continue with the [image generator tool](http://wiki.sensenet.com/How_to_integrate_a_custom_document_preview_generator#Creating_the_image_generator_tool) section below.
+If you only want to integrate a custom preview generator tool, but leave the built-in preview serving mechanism as-is, then your custom provider is done - please continue with the image generator tool section below.
 
 Serving images
 ==============
