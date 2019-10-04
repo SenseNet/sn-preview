@@ -8,7 +8,7 @@ tags: [document, preview, preview generator]
 Overview
 ========
 
-**Sense/Net ECM** provides means to [view documents in the browser](http://wiki.sensenet.com/Viewing_documents_in_the_browser "Viewing documents in the browser") without the need of *Microsoft Office* or other tools to be installed on the users' computers. The built-in solution is only available in the **Enterprise Edition**. However Sense/Net developers can integrate any third-party preview generator module easily even in the **Community Edition**. This tutorial shows you how to do it.
+**sensenet** provides means to [view documents in the browser](/viewing-documents-in-the-browser.md "Viewing documents in the browser") without the need of *Microsoft Office* or other tools to be installed on the users' computers. The built-in solution is only available in the **Enterprise Edition**. However sensenet developers can integrate any third-party preview generator module easily even in the **Community Edition**. This tutorial shows you how to do it.
 
 The information in this article is related to **Sense/Net ECM 6.3.1** and above. For implementations for previous versions please refer to the source code.
 
