@@ -15,7 +15,7 @@ The information in this article is related to **Sense/Net ECM 6.3.1** and abov
 Creating the provider
 =====================
 
-To implement a custom preview provider you will need to [create a new class](http://wiki.sensenet.com/How_to_create_a_new_class_for_source_code "How to create a new class for source code") that inherits one of the following base classes:
+To implement a custom preview provider you will need to [create a new class](https://github.com/SenseNet/sensenet/blob/master/docs/how-to-create-a-new-class-for-source-code.md) "How to create a new class for source code") that inherits one of the following base classes:
 
 -   *SenseNet.Preview.DocumentPreviewProvider*: in both the *Enterprise* or the *Community Edition*. Contains all the necessary methods for a full implementation.
 -   *AsposePreviewProvider.AsposePreviewProvider*: only in the *Enterprise Edition*. Additionally to the one above, it contains methods and properties related to the [Aspose](http://www.aspose.com/) image generator plugin.
