@@ -28,7 +28,7 @@ The supported document types depend on the preview generator implementation. The
   - a single image is generated for every page of the document
 - **Microsoft Office Excel workbooks (.xls, .xlsx, .xlsm, .xltm, .xltx)**
   - a single image is generated for every worksheet
-- **Microsoft Office Powerpoint presentations (.ppt, .pptx, .pot, .potx, .ppsx, .pptx)**
+- **Microsoft Office PowerPoint presentations (.ppt, .pptx, .pot, .potx, .ppsx, .pptx)**
   - a single image is generated for every slide
 - **Microsoft Office Project files (.mpp)**
   - a single image is generated for every project page
