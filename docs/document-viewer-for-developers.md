@@ -118,13 +118,13 @@ Initialize the Query builder via a jQuery selector:
 ## Configuring the Document Viewer jQuery plugin
 
 <div><span style="font-size: 16px;font-weight: bold;">getImage</span><span style="font-size: 16px;color:#008cd1">  function</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: null)</span></div>
-The function that gives the path of a previewimage for pagenumber. (this function will be called, when the docviewer want to display a page)
+The function that gives the path of a previewimage for pagenumber (this function will be called, when the docviewer want to display a page).
 
 <div><span style="font-size: 16px;font-weight: bold;">getExistingPreviewImages</span><span style="font-size: 16px;color:#008cd1">  function</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: null)</span></div>
-The function that gives an array with the paths, index, width and height of all the  previewimages that are already generated. (this function will be called, when the docviewer initializing)
+The function that gives an array with the paths, index, width and height of all the preview images that are already generated (this function will be called, when the docviewer initializing).
 
 <div><span style="font-size: 16px;font-weight: bold;">getThumbnail</span><span style="font-size: 16px;color:#008cd1">  function</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: null)</span></div>
-The function that gives the path of a thumbnailimage for a  pagenumber. (this function will be called when the docviewer want to display a thumbnail)
+The function that gives the path of a thumbnailimage for a page number (this function will be called when the docviewer want to display a thumbnail).
 
 <div><span style="font-size: 16px;font-weight: bold;">showthumbnails</span><span style="font-size: 16px;color:#008cd1">  Boolean</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: true)</span></div>
 You can set visibility of thumbnail images.
@@ -145,7 +145,7 @@ You can set the title of the document. It will be shown in the toolbar.
 You can set a special width to size the Document viewer. If you leave this property empty, the plugin will calculate viewer’s width from elements width. This property is useful if you want to use different widths on different devices e.g. tablets, mobile phones.
 
 <div><span style="font-size: 16px;font-weight: bold;">containerHeight</span><span style="font-size: 16px;color:#008cd1">  Number</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: $container.height())</span></div>
-You can set a special height to size the Document viewer. If you leave this property empty, the plugin will calculate viewer’s height from elements height. This property is useful if you want to use different heighta on different devices e.g. tablets, mobile phones.
+You can set a special height to size the Document viewer. If you leave this property empty, the plugin will calculate viewer’s height from elements height. This property is useful if you want to use different height on different devices e.g. tablets, mobile phones.
 
 <div><span style="font-size: 16px;font-weight: bold;">reactToResize</span><span style="font-size: 16px;color:#008cd1">  Boolean</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: false)</span></div>
 Set it to true if you want to resize document viewer dynamically when the browser window is resized.
@@ -206,10 +206,10 @@ You can choose whether your function will be displayed on touch devices or not.
 You can add a function that you can return whether the current user can see the functions button in the toolbar or not. For example Save function is only enabled for a user who  has a Save permission, so you create a function that return true only when the current user has Save permission for the current content and you call this function in this permission option. The option expects only true or false as a value.
 
 <div><span style="font-size: 16px;font-weight: bold;">getPC</span><span style="font-size: 16px;color:#008cd1">  function</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: null)</span></div>
-The function that gives the actual pagecount and can be called from the plugin. (this function will be called, when the docviewer is refreshed)
+The function that gives the actual pagecount and can be called from the plugin (this function will be called, when the docviewer is refreshed).
 
 <div><span style="font-size: 16px;font-weight: bold;">getShapes</span><span style="font-size: 16px;color:#008cd1">  function</span><span style="font-size: 16px;font-style: italic;color: #555">  (default: null)</span></div>
-The function that gives the actual document's shapes and can be called from the plugin. (this function will be called, when the docviewer is refreshed)
+The function that gives the actual document's shapes and can be called from the plugin (this function will be called, when the docviewer is refreshed).
 
 ## Methods
 <div><span style="font-size: 16px;font-weight: bold;">setZoomLevel</span>
@@ -339,7 +339,7 @@ Changes the currently displayed page in the viewer.
 <div style="font-size: 100%;font-weight: bold;">Parameters:</div>
 
 - page <span style="font-size: 13px;color:#666">   required |</span><span style="font-size: 13px;color:#008cd1">  integer</span><span style="font-size: 13px;font-style: italic;color: #555">  | (default: 1)</span>
-::The number of the page which you want to display.
+:The number of the page which you want to display.
 
 ```javascript
 viewer = $dv.data('snDocViewer');
@@ -501,7 +501,7 @@ $('#disable').on('click', function(){
 
 ## Callbacks
 <div><span style="font-size: 16px;font-weight: bold;">documentOpened</span>
-Called when the document was opened, ie. when this plugin was initialized
+Called when the document was opened, i.e. when this plugin was initialized
 
 ```javascript
    $dv.documentViewer({
@@ -518,7 +518,7 @@ Called when the document was opened, ie. when this plugin was initialized
 ```
 
 <div><span style="font-size: 16px;font-weight: bold;">documentClosed</span>
-Called when the document is closed, ie. when either the plugin is destroyed or the window is unloaded
+Called when the document is closed, i.e. when either the plugin is destroyed or the window is unloaded
 
 ```javascript
    $dv.documentViewer({
@@ -603,7 +603,7 @@ Called when an error happened in the viewer
 ```
 
 <div><span style="font-size: 16px;font-weight: bold;">documentChanged</span>
-Called when the document was changed, ie. when a shape is added
+Called when the document was changed, i.e. when a shape is added
 
 ```javascript
    $dv.documentViewer({
