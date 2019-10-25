@@ -1,3 +1,5 @@
+<img src="https://avatars0.githubusercontent.com/u/4069121?s=200&v=4" height="50px" alt="Sensenet">
+
 # Document preview for the sensenet platform :books:
 In this repository, you'll find preview-related modules for the [sensenet](https://github.com/SenseNet/sensenet) platform.
 
