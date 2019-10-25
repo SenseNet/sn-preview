@@ -1,10 +1,10 @@
-# Document preview for the sensenet platform.
-In this repository you'll find preview-related modules for the [sensenet](https://github.com/SenseNet/sensenet) platform.
+# Document preview for the sensenet platform :books:
+In this repository, you'll find preview-related modules for the [sensenet](https://github.com/SenseNet/sensenet) platform.
 
 [![NuGet](https://img.shields.io/nuget/v/SenseNet.Preview.svg)](https://www.nuget.org/packages/SenseNet.Preview)
 
-## Installation
+## Installation  :arrow_down: 
 About the contents of Preview packages and how to install them, please visit the [install guide](/docs/install-preview-from-nuget.md).
 
-## For developers
-This repository contains the source code of all preview components, but does not contain the [Aspose](http://aspose.com) libraries and licence file necessary for compiling the projects. Please visit [www.aspose.com](http://aspose.com) for downloading a trial version if you want to experiment with these packages.
+## For Developers :computer: 
+This repository contains the source code of all preview components but does not contain the [Aspose](http://aspose.com) libraries and licence file necessary for compiling the projects. Please visit [www.aspose.com](http://aspose.com) for downloading a trial version if you want to experiment with these packages.
