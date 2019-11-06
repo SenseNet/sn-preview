@@ -4,12 +4,12 @@ source_url: 'https://github.com/SenseNet/sn-preview/blob/master/docs/document-vi
 category: Development
 version: v7.0
 tags: [document, preview, sn6, sn7]
-description: sensenet ECM comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. This article is for developers about how to customize the Document Viewer plugin on the client side.
+description: sensenet comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. This article is for developers about how to customize the Document Viewer plugin on the client side.
 
 ---
 
 # Document Viewer for Developers
-The Document Viewer in sensenet ECM helps users to read documents in the browser, and complete them with highlights, redactions and annotations to facilitate collaboration. All this without needing a document viewer plugin or software. The Document Viewer shows the preview images of the document that are generated when you upload a file. You can learn more about preview generation in the main [Preview article](/docs/preview).
+The Document Viewer in sensenet helps users to read documents in the browser, and complete them with highlights, redactions and annotations to facilitate collaboration. All this without needing a document viewer plugin or software. The Document Viewer shows the preview images of the document that are generated when you upload a file. You can learn more about preview generation in the main [Preview article](/docs/preview).
 
 ## Document Viewer
 Document viewer’s basic functionality is to read a document in the browser. Actually it is not the document that you see in the viewer, only its pre-generated preview images. So users without the right permissions can’t access the original document, they can only see the preview images. There are some special permissions that are related to the document viewer.

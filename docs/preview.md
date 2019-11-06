@@ -4,18 +4,18 @@ source_url: 'https://github.com/SenseNet/sn-preview/blob/master/docs/preview.md'
 category: Guides
 version: v7.0
 tags: [document, preview, sn6, sn7]
-description: Sometimes it is necessary to open documents in the web browser directly - for example because Microsoft Office (or another desktop office application) is not installed on the user's computer. The Enterprise Edition of sensenet ECM comes with an integrated document preview generator that creates images of documents in the background that can be viewed in any browser.
+description: Sometimes it is necessary to open documents in the web browser directly - for example because Microsoft Office (or another desktop office application) is not installed on the user's computer. The Enterprise Edition of sensenet comes with an integrated document preview generator that creates images of documents in the background that can be viewed in any browser.
 
 ---
 
 # Viewing documents in the browser
-Managing Office documents is a popular feature in every ECM system. This is why **sensenet ECM** comes with built-in document management features like [Office integration](/docs/managing-documents-from-microsoft-office) that enables users to directly open Office documents from the repository and edit them using Microsoft Office (e.g. Word or Excel). It is however in many cases desired to open documents **in the web browser directly** even if Microsoft Office (or another desktop office application) is not installed on the user's computer. The **Enterprise Edition** of sensenet ECM comes with an integrated document preview generator that creates images of documents in the background that can be viewed in any browser.
+Managing Office documents is a popular feature in every ECM system. This is why **sensenet** comes with built-in document management features like [Office integration](/docs/managing-documents-from-microsoft-office) that enables users to directly open Office documents from the repository and edit them using Microsoft Office (e.g. Word or Excel). It is however in many cases desired to open documents **in the web browser directly** even if Microsoft Office (or another desktop office application) is not installed on the user's computer. The **Enterprise Edition** of sensenet comes with an integrated document preview generator that creates images of documents in the background that can be viewed in any browser.
 
-> Please note that the preview generator feature is available out of the box only in the **Enterprise Edition** of sensenet ECM. Other parts of the preview feature - e.g. the [Document viewer](/docs/document-viewer) that displays the images - are available for everyone, so it is possible to use it if you create a custom tool for generating preview images.
+> Please note that the preview generator feature is available out of the box only in the **Enterprise Edition** of sensenet. Other parts of the preview feature - e.g. the [Document viewer](/docs/document-viewer) that displays the images - are available for everyone, so it is possible to use it if you create a custom tool for generating preview images.
 
-When the user uploads or modifies a document, sensenet ECM generates preview images of the document and persists them into the [Content Repository](/docs/content-repository). These images then can be viewed in the browser and thus **no desktop application is required** to view contents of a document.
+When the user uploads or modifies a document, sensenet generates preview images of the document and persists them into the [Content Repository](/docs/content-repository). These images then can be viewed in the browser and thus **no desktop application is required** to view contents of a document.
 
-The preview generator implementation uses a provider approach, which means that you can easily use a different preview generation technology than the one that comes with sensenet ECM. Also, this way the whole preview generation feature can be turned on and off just by a simple web.config setting. See the [Configuration](#Configuration) section for details.
+The preview generator implementation uses a provider approach, which means that you can easily use a different preview generation technology than the one that comes with sensenet. Also, this way the whole preview generation feature can be turned on and off just by a simple web.config setting. See the [Configuration](#Configuration) section for details.
 
 > The built-in preview generator is built on the following technologies: 
 > - [Task Management](/docs/task-management) framework
@@ -70,7 +70,7 @@ The built-in preview generator tool has the following configuration options in i
 - **PreviewResolution**: Resolution of generated preview images. Default: *300*.
 
 ## Errors during image generation
-The built-in preview generator tool logs all error messages through the agent (it does not have a log file or event log section itself). The agent than sends the log to sensenet ECM through the task management web app. This means that all error messages can be processed and handled by the developer in the sensenet ECM web application.
+The built-in preview generator tool logs all error messages through the agent (it does not have a log file or event log section itself). The agent than sends the log to sensenet through the task management web app. This means that all error messages can be processed and handled by the developer in the sensenet web application.
 
 In case only a page fails (not the whole document), the generator tool substitutes that page with an empty image that can be customized by replacing the *empty.png* in the folder of the generator tool.
 
@@ -78,7 +78,7 @@ In case only a page fails (not the whole document), the generator tool substitut
 Preview images for different versions are stored in separate subfolders (e.g. *.../mydoc.docx/Previews/V2.3.A/preview1.png*), so when you visit the preview page for a particular version, you'll see the preview images related to that version. This applies to users with permissions only for major versions: they will see previews for the latest major version, while administrators see the previews of the last draft.
 
 ## Restrictions and annotations
-sensenet ECM supports adding visual layers onto preview images. In this section you can learn about the types and possibilities.
+sensenet supports adding visual layers onto preview images. In this section you can learn about the types and possibilities.
 
 - watermark
 - redaction
@@ -118,7 +118,7 @@ Editors can place annotations (comments) onto preview images. These comments are
 Editors can place highlights onto preview images. These highlights are visible for everyone with at least preview permissions, but can be switched OFF in the [Document Viewer](/docs/document-viewer).
 
 ## Preview permissions
-There are three preview-related permissions in sensenet ECM:
+There are three preview-related permissions in sensenet:
 
 - **Restricted preview**: the user can see the preview image, but only with all the restrictions if there are any.
 - **Preview without watermark**: the user can see the preview image without watermark. Please note that even if the user has this permission, it is possible to switch ON watermark in the [Document Viewer](/docs/document-viewer) to check how it will look for users with less permissions.

@@ -1,27 +1,27 @@
 # Install sensenet Preview from NuGet
 
-This article is **for developers** about installing the **Preview** component for [sensenet ECM](https://github.com/SenseNet) from NuGet. Before you can do that, please install at least the core layer, [sensenet Services](/docs/install-sn-from-nuget), which is a prerequisite of this component.
+This article is **for developers** about installing the **Preview** component for [sensenet](https://github.com/SenseNet) from NuGet. Before you can do that, please install at least the core layer, [sensenet Services](/docs/install-sn-from-nuget), which is a prerequisite of this component.
 
 >About choosing the components you need, take a look at [this article](/docs/sensenet-components) that describes the main components and their relationships briefly.
 
 ![sensenet Preview](https://github.com/SenseNet/sn-resources/raw/master/images/sn-components/sn-components_preview.png "sensenet Preview")
 
 ## The SenseNet.Preview.Install package
-This component contains the preview modules needed in sensenet ECM to **access and display** preview images. It also contains the mechanism for **initiating preview generation**, when it is available.
+This component contains the preview modules needed in sensenet to **access and display** preview images. It also contains the mechanism for **initiating preview generation**, when it is available.
 
 > This package **does not contain** the task executor tool for actually generating preview images, because the tool offered by Sense/Net Inc. uses the [Aspose](http://aspose.com) libraries that cannot be published here. The source code written by us however is available here.
 
 This means that even community customers can install the Preview component and display preview images using the **Document Viewer**, if they create their own *custom tool* for generating preview images.
 
-> This package also contains demo files and pre-generated preview images so that you can install and try it freely, without having to buy the sensenet ECM or [Aspose](http://aspose.com) licence.
+> This package also contains demo files and pre-generated preview images so that you can install and try it freely, without having to buy the sensenet or [Aspose](http://aspose.com) licence.
 
 ## The Aspose package
-There is a separate NuGet package that contains the preview generator tool and other server-side modules needed for generating preview images. It is built using the [Aspose](http://aspose.com) libraries and it is available only from a private sensenet ECM NuGet feed. 
+There is a separate NuGet package that contains the preview generator tool and other server-side modules needed for generating preview images. It is built using the [Aspose](http://aspose.com) libraries and it is available only from a private sensenet NuGet feed. 
 
 If you need this feature, you have two options:
 
-- Become a sensenet ECM *Enterprise* customer and receive this package for free.
-- Use the *Community* version of sensenet ECM (available publicly on github and NuGet) and purchase an *Aspose licence* separately. In that case you will be able to compile and use our preview generator tool, without a sensenet ECM Enterprise licence.
+- Become a sensenet *Enterprise* customer and receive this package for free.
+- Use the *Community* version of sensenet (available publicly on github and NuGet) and purchase an *Aspose licence* separately. In that case you will be able to compile and use our preview generator tool, without a sensenet Enterprise licence.
 
 ## Installation
 To get started, stop your web site and install the preview package the usual way:
@@ -55,4 +55,4 @@ Optionally, if you have installed the *WebPages* and *Workspaces* components, yo
 ```
 
 
-If there were no errors, you are good to go! Hit F5 in Visual Studio and start experimenting with sensenet ECM Preview!
+If there were no errors, you are good to go! Hit F5 in Visual Studio and start experimenting with sensenet Preview!
