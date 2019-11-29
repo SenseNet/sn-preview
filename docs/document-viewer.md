@@ -4,12 +4,12 @@ source_url: 'https://github.com/SenseNet/sn-preview/blob/master/docs/document-vi
 category: Guides
 version: v7.0
 tags: [document, preview, sn6, sn7]
-description: sensenet ECM comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. Document Viewer improves the productivity of companies by facilitating collaboration with features like highlights, redactions, annotations and watermarking across any enterprises.
+description: sensenet comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. Document Viewer improves the productivity of companies by facilitating collaboration with features like highlights, redactions, annotations and watermarking across any enterprises.
 
 ---
 
 # Document viewer
-Managing Office documents is a popular feature in every ECM system. This is why sensenet ECM comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. Document Viewer improves the productivity of companies by facilitating collaboration with features like highlights, redactions, annotations and watermarking across any enterprises. 
+Managing Office documents is a popular feature in every ECM system. This is why sensenet comes with a built-in Document Viewer that helps you viewing documents and images in any modern browser on PCs, tablets and mobile phones. Document Viewer improves the productivity of companies by facilitating collaboration with features like highlights, redactions, annotations and watermarking across any enterprises. 
 
 Our document viewer is a zero footprint HTML5 solution. It helps users to read documents in the browser without using any plugin or installing any software. Besides the common document viewer functionalities like paging, zooming, etc., you get the power to highlight, redact and annotate documents. On tablets the document viewer works in read only mode, so you can view the highlighted, redacted, annotated and watermarked documents while on the go.
 
@@ -135,7 +135,7 @@ If you have the rights to save the document you can save the things that you’v
 ![Save shapes](https://github.com/SenseNet/sn-preview/raw/master/docs/images/preview-saveshapes.png "Save shapes")
 
 ## Preview permissions
-There are three preview-related permissions in sensenet ECM:
+There are three preview-related permissions in sensenet:
 
 - **Restricted preview**: the user can see the preview image, but only with all the restrictions (with watermark and redactions if they are set on the preview).
 - **Preview without watermark**: the user can see the preview image without watermark.
