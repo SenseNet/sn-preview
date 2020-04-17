@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>SenseNet.Preview.Controller</PackageId>
-    <AssemblyName>SenseNet.Preview.Controller</AssemblyName>
+    <PackageId>SenseNet.Preview.Install</PackageId>
+    <AssemblyName>SenseNet.Preview.Install</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>7.1.4</Version>
-    <Authors>kavics,tusmester,aniko,lajos,bezoo</Authors>
+    <Authors>kavics,tusmester,aniko</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
     <PackageLicenseUrl>https://github.com/SenseNet/sn-preview/blob/master/LICENSE</PackageLicenseUrl>
@@ -15,20 +15,28 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>sensenet preview</PackageTags>
     <PackageReleaseNotes>See release notes on GitHub.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <Product>sensenet Preview</Product>
-    <Description>sensenet Preview Controller contains the server-side components of the preview functionality.</Description>
+    <Description>sensenet Preview installer contains the install content for the Preview functionality in sensenet. This package should be installed only in a single project.</Description>
+    <RootNamespace>SenseNet.Preview.Controller</RootNamespace>  
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SenseNet.Tools" Version="3.1.0" />
-    <PackageReference Include="SenseNet.ContentRepository" Version="7.6.1" />    
-    <PackageReference Include="System.Runtime.Caching" Version="4.5" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+    <ProjectReference Include="..\Preview.Controller\Preview.Controller.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Preview\Preview.csproj" />
+    <None Include="..\nuget\readme.txt">
+      <PackagePath></PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
+    <None Include="..\nuget\content\**">
+      <PackagePath>content</PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
   </ItemGroup>
 
 </Project>
