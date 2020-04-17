@@ -2,20 +2,22 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SenseNet.ContentRepository.Search.Indexing;
 using SenseNet.ContentRepository.Storage;
 using SenseNet.ContentRepository.Storage.Data;
-using SenseNet.ContentRepository.Storage.Data.SqlClient;
 using SenseNet.Diagnostics;
 using SenseNet.Search;
 using SenseNet.Search.Querying;
 using Retrier = SenseNet.Tools.Retrier;
+// ReSharper disable AccessToDisposedClosure
 
 namespace SenseNet.Preview.Packaging.Steps
 {
@@ -179,7 +181,7 @@ ORDER BY MajorNumber, MinorNumber";
         private static List<NodeInfo> LoadPreviewImagesBlockInternal(string path, int maxIndex, int minimumNodeId, int blockSize)
         {
             var filters = new StringBuilder();
-            var parameters = new List<IDataParameter>();
+            var parameters = new List<DbParameter>();
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -254,12 +256,12 @@ ORDER BY MajorNumber, MinorNumber";
 
             Trace.Write("Removing preview folder block from the index.");
 
-            IndexManager.IndexingEngine.WriteIndex(pathBag.SelectMany(p => new[]
+            IndexManager.IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
                 {
                     new SnTerm(IndexFieldName.InTree, p),
                     new SnTerm(IndexFieldName.Path, p)
                 }),
-                null, null);
+                null, null, CancellationToken.None).GetAwaiter().GetResult();
 
             return true;
         }
@@ -275,7 +277,7 @@ ORDER BY MajorNumber, MinorNumber";
         private static List<NodeInfo> LoadPreviewFoldersBlockInternal(string path, bool keepLastVersions, int minimumNodeId, int blockSize)
         {
             var filters = new StringBuilder();
-            var parameters = new List<IDataParameter>();
+            var parameters = new List<DbParameter>();
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -338,12 +340,12 @@ ORDER BY MajorNumber, MinorNumber";
 
             Trace.Write("Removing preview folder block from the index.");
 
-            IndexManager.IndexingEngine.WriteIndex(pathBag.SelectMany(p => new[]
+            IndexManager.IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
                 {
                     new SnTerm(IndexFieldName.InTree, p),
                     new SnTerm(IndexFieldName.Path, p)
                 }),
-                null, null);
+                null, null, CancellationToken.None).GetAwaiter().GetResult();
 
             return true;
         }
@@ -359,7 +361,7 @@ ORDER BY MajorNumber, MinorNumber";
         private static List<NodeInfo> LoadEmptyPreviewFoldersBlockInternal(string path, int blockSize)
         {
             var filters = new StringBuilder(Scripts.EmptyFolder);
-            var parameters = new List<IDataParameter>();
+            var parameters = new List<DbParameter>();
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -389,14 +391,15 @@ ORDER BY MajorNumber, MinorNumber";
         }
         private static async Task DeleteContentFromDbInternalAsync(int nodeId)
         {
-            using (var proc = DataProvider.Instance.CreateDataProcedure("proc_Node_DeletePhysical")
-                .AddParameter("@NodeId", nodeId)
-                .AddParameter("@Timestamp", DBNull.Value, DbType.Int32))
+            using (var ctx = GetDb().CreateDataContext(CancellationToken.None))
             {
-                proc.CommandType = CommandType.StoredProcedure;
+                await ctx.ExecuteNonQueryAsync("proc_Node_DeletePhysical", cmd =>
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                // assume this is a SQL procedure so we can execute it asynchronously
-                await ((SqlProcedure)proc).ExecuteNonQueryAsync();
+                    cmd.Parameters.Add(ctx.CreateParameter("@NodeId", DbType.Int32, nodeId));
+                    cmd.Parameters.Add(ctx.CreateParameter("@Timestamp", DbType.Int32, DBNull.Value));
+                }).ConfigureAwait(false);
 
                 Trace.Write($"Content {nodeId} DELETED from database.");
             }
@@ -404,90 +407,82 @@ ORDER BY MajorNumber, MinorNumber";
 
         private static int GetTypeId(string contentTypeName)
         {
-            using (var proc = DataProvider.Instance.CreateDataProcedure(Scripts.ContentTypeId)
-                .AddParameter("@Name", contentTypeName))
+            using (var ctx = GetDb().CreateDataContext(CancellationToken.None))
             {
-                proc.CommandType = CommandType.Text;
-
-                return (int)proc.ExecuteScalar();
+                return (int)ctx.ExecuteScalarAsync(Scripts.ContentTypeId, cmd =>
+                {
+                    cmd.Parameters.Add(ctx.CreateParameter("@Name", DbType.String, contentTypeName));
+                }).GetAwaiter().GetResult();
             }
         }
 
         private static Tuple<VersionNumber, VersionNumber> GetLastVersions(string path)
         {
-            VersionNumber majorVersion = null;
-            VersionNumber minorVersion = null;
-
-            SqlProcedure cmd = null;
-            SqlDataReader reader = null;
-
-            try
+            using (var ctx = GetDb().CreateDataContext(CancellationToken.None))
             {
-                cmd = new SqlProcedure
+                return ctx.ExecuteReaderAsync(Scripts.LastVersions, cmd =>
                 {
-                    CommandText = Scripts.LastVersions,
-                    CommandType = CommandType.Text
-                };
-                cmd.Parameters.Add("@Path", SqlDbType.NVarChar, 450).Value = path;
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                    cmd.Parameters.Add(ctx.CreateParameter("@Path", DbType.String, 450, path));
+                }, (reader, token) =>
                 {
-                    var majorNumber = reader.GetInt16(reader.GetOrdinal("MajorNumber"));
-                    var minorNumber = reader.GetInt16(reader.GetOrdinal("MinorNumber"));
-                    var statusCode = reader.GetInt16(reader.GetOrdinal("Status"));
-                    var isLastMajor = reader.GetBoolean(reader.GetOrdinal("LastMajor"));
-                    var isLastMinor = reader.GetBoolean(reader.GetOrdinal("LastMinor"));
-
-                    var versionNumber = new VersionNumber(majorNumber, minorNumber, (VersionStatus)statusCode);
-
-                    if (isLastMajor)
-                        majorVersion = versionNumber;
-                    if (isLastMinor)
-                        minorVersion = versionNumber;
-                }
-
-            }
-            finally
-            {
-                reader?.Dispose();
-                cmd?.Dispose();
-            }
-
-            return new Tuple<VersionNumber, VersionNumber>(majorVersion, minorVersion);
-        }
-
-        private static List<NodeInfo> LoadData(string script, params IDataParameter[] parameters)
-        {
-            var buffer = new List<NodeInfo>();
-
-            using (var proc = DataProvider.Instance.CreateDataProcedure(script))
-            {
-                proc.CommandType = CommandType.Text;
-
-                if (parameters != null)
-                {
-                    foreach (var dataParameter in parameters)
-                    {
-                        proc.Parameters.Add(dataParameter);
-                    }
-                }
-
-                using (var reader = proc.ExecuteReader())
-                {
-                    if (!reader.HasRows)
-                        return buffer;
+                    VersionNumber majorVersion = null;
+                    VersionNumber minorVersion = null;
 
                     while (reader.Read())
                     {
-                        buffer.Add(GetNodeInfo(reader));
-                    }
-                }
+                        var majorNumber = reader.GetInt16(reader.GetOrdinal("MajorNumber"));
+                        var minorNumber = reader.GetInt16(reader.GetOrdinal("MinorNumber"));
+                        var statusCode = reader.GetInt16(reader.GetOrdinal("Status"));
+                        var isLastMajor = reader.GetBoolean(reader.GetOrdinal("LastMajor"));
+                        var isLastMinor = reader.GetBoolean(reader.GetOrdinal("LastMinor"));
 
-                return buffer;
+                        var versionNumber = new VersionNumber(majorNumber, minorNumber, (VersionStatus)statusCode);
+
+                        if (isLastMajor)
+                            majorVersion = versionNumber;
+                        if (isLastMinor)
+                            minorVersion = versionNumber;
+                    }
+
+                    var result = new Tuple<VersionNumber, VersionNumber>(majorVersion, minorVersion);
+
+                    return Task.FromResult(result);
+                }).GetAwaiter().GetResult();
             }
         }
 
+        private static List<NodeInfo> LoadData(string script, params DbParameter[] parameters)
+        {
+            using (var ctx = GetDb().CreateDataContext(CancellationToken.None))
+            {
+                return ctx.ExecuteReaderAsync(script,
+                    cmd =>
+                    {
+                        if (parameters != null)
+                            cmd.Parameters.AddRange(parameters);
+                    },
+                    (reader, token) =>
+                    {
+                        var buffer = new List<NodeInfo>();
+                        if (!reader.HasRows)
+                            return Task.FromResult(buffer);
+
+                        while (reader.Read())
+                        {
+                            buffer.Add(GetNodeInfo(reader));
+                        }
+
+                        return Task.FromResult(buffer);
+                    }).GetAwaiter().GetResult();
+            }
+        }
+
+        private static RelationalDataProviderBase GetDb()
+        {
+            if (!(DataStore.DataProvider is RelationalDataProviderBase db))
+                throw new NotSupportedException($"Database provider not supported: {DataStore.DataProvider?.GetType().FullName}");
+            return db;
+        }
         #endregion
 
         //========================================================================================= Helper methods
