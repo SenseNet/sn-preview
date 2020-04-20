@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Aspose.Email.Mail;
+using Aspose.Email;
 
 namespace SenseNet.Preview
 {

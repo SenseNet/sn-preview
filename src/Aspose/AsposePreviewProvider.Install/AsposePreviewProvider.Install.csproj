@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>SenseNet.Preview.Aspose.Install</PackageId>
+    <AssemblyName>SenseNet.Preview.Aspose.Install</AssemblyName>
+    <RootNamespace>SenseNet.Preview.Aspose.Install</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>7.2.0.1</Version>
+    <Company>Sense/Net Inc.</Company>
+    <Copyright>Copyright © Sense/Net Inc.</Copyright>
+    <PackageLicenseUrl>https://github.com/SenseNet/sn-preview/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/SenseNet/sn-preview</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/SenseNet/sn-resources/master/images/sn-icon/sensenet-icon-64.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/SenseNet/sn-preview.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>sensenet preview csp aspose</PackageTags>
+    <PackageReleaseNotes>See release notes on GitHub.</PackageReleaseNotes>
+    <Product>sensenet Aspose Preview Provider</Product>
+    <Description>This package contains installation items and should be installed only in a single console or web project. All other projects should reference the SenseNet.Preview.Aspose dll-only package.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="install-preview-aspose.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AsposePreviewProvider\AsposePreviewProvider.csproj" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell.exe $(SolutionDir)..\..\tools\scripts\CompressInstall.ps1" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\nuget\readme.txt">
+      <PackagePath></PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
+    <None Include="..\nuget\content\**">
+      <PackagePath>content</PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+
+</Project>

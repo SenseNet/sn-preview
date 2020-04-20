@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Aspose.Cells;
 using Aspose.Pdf;
-using Aspose.Pdf.Generator;
 using Aspose.Slides;
 using Aspose.Words;
 using Aspose.Words.Drawing;
@@ -97,8 +96,7 @@ namespace SenseNet.Preview
             try
             {
                 var ms = new MemoryStream();
-                var pdf = new Pdf();
-                var document = new Aspose.Pdf.Document(pdf);
+                using var document = new Aspose.Pdf.Document();
                 var index = 1;
                 var pageAttributes = GetPageAttributes(content);            
                 var imageOptions = new PreviewImageOptions() { RestrictionType = restrictionType };
@@ -197,8 +195,6 @@ namespace SenseNet.Preview
                         // Compute dimensions using a SQUARE (max width and height are equal).
                         ComputeResizedDimensionsWithRotation(previewImage, PREVIEW_WORD_HEIGHT, rotation, out newWidth, out newHeight);
 
-                        var image = System.Drawing.Image.FromStream(imgStream);
-
                         try
                         {
                             // skip to the next page
@@ -230,7 +226,7 @@ namespace SenseNet.Preview
                                 }
                             }
                             
-                            builder.InsertImage(image,
+                            builder.InsertImage(imgStream,
                                                 RelativeHorizontalPosition.LeftMargin,
                                                 -5,
                                                 RelativeVerticalPosition.TopMargin,

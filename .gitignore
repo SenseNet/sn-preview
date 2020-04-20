@@ -295,3 +295,4 @@ __pycache__/
 /src/Aspose/AsposePreviewGenerator/Aspose.Total.lic
 /tools/scripts/*.nupkg
 /tools/scripts/*.zip
+/src/Aspose/AsposePreviewProvider.Install/install-preview-aspose.zip
