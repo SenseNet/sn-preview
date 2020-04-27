@@ -5,7 +5,7 @@
     <AssemblyName>SenseNet.Preview.Aspose.PreviewImageGenerators</AssemblyName>
     <RootNamespace>SenseNet.Preview.Aspose.PreviewImageGenerators</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>7.1.0.1</Version>
+    <Version>7.1.0.2</Version>
     <Authors>kavics,tusmester,aniko</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
@@ -22,7 +22,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspose.Total" Version="20.3.1" />
+    <PackageReference Include="Aspose.Cells" Version="20.4.0" />
+    <PackageReference Include="Aspose.Diagram" Version="20.4.0" />
+    <PackageReference Include="Aspose.Email" Version="20.3.0" />
+    <PackageReference Include="Aspose.Imaging" Version="20.4.0" />
+    <PackageReference Include="Aspose.PDF" Version="20.4.0" />
+    <PackageReference Include="Aspose.Slides.NET" Version="20.4.0" />
+    <PackageReference Include="Aspose.Tasks" Version="20.4.0" />
+    <PackageReference Include="Aspose.Words" Version="20.4.0" />
     <PackageReference Include="SenseNet.Preview" Version="7.1.0" />
     <PackageReference Include="SenseNet.Tools" Version="3.2.2" />
   </ItemGroup>

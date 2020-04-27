@@ -86,7 +86,8 @@ namespace SenseNet.Preview.AsposePreviewGenerator
 
                 contentPath = fileInfo["Path"].Value<string>();
 
-                CheckLicense(contentPath.Substring(contentPath.LastIndexOf('/') + 1));
+                //UNDONE: uncomment license check
+                //CheckLicense(contentPath.Substring(contentPath.LastIndexOf('/') + 1));
             }
             catch (Exception ex)
             {
@@ -696,6 +697,18 @@ namespace SenseNet.Preview.AsposePreviewGenerator
 
         private static bool ParseParameters(string[] args)
         {
+            /* *********************************************************** */
+            
+            //UNDONE: remove hardcoded parameters
+            ContentId = 1354;
+            Version = "V1.0.A";
+            StartIndex = 0;
+            MaxPreviewCount = 3;
+            SiteUrl = "https://localhost:44362";
+            return true;
+
+            /* *********************************************************** */
+
             foreach (var arg in args)
             {
                 if (arg.StartsWith("USERNAME:", StringComparison.OrdinalIgnoreCase))
