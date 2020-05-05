@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>SenseNet.Preview.Install</PackageId>
     <AssemblyName>SenseNet.Preview.Install</AssemblyName>
+    <RootNamespace>SenseNet.Preview.Install</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>7.2.0</Version>
     <Authors>kavics,tusmester,aniko</Authors>
@@ -15,16 +16,22 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>sensenet preview</PackageTags>
     <PackageReleaseNotes>See release notes on GitHub.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>sensenet Preview</Product>
     <Description>sensenet Preview installer contains the install content for the Preview functionality in sensenet. This package should be installed only in a single project.</Description>
-    <RootNamespace>SenseNet.Preview.Controller</RootNamespace>  
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="install-preview.zip" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Preview.Controller\Preview.Controller.csproj" />
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell.exe $(SolutionDir)..\..\tools\scripts\CompressInstallPreview.ps1" />
+  </Target>
 
   <ItemGroup>
     <None Include="..\nuget\readme.txt">

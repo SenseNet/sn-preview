@@ -7,17 +7,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsposePreviewProvider", "As
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsposePreviewImageGenerators", "AsposePreviewImageGenerators\AsposePreviewImageGenerators.csproj", "{96AF4120-B80A-4F36-8004-0141B1B98E95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsposePreviewGenerator", "AsposePreviewGenerator\AsposePreviewGenerator.csproj", "{0689A4C4-B776-440B-85A2-942DA08219A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsposePreviewGenerator", "AsposePreviewGenerator\AsposePreviewGenerator.csproj", "{0689A4C4-B776-440B-85A2-942DA08219A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{44A3FC83-BB76-42CB-97D0-8A5F1C10DD4A}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\tools\scripts\CompressInstall.ps1 = ..\..\tools\scripts\CompressInstall.ps1
+		..\..\tools\scripts\CompressInstallAspose.ps1 = ..\..\tools\scripts\CompressInstallAspose.ps1
 		..\..\tools\scripts\CreateNuGetPackages.ps1 = ..\..\tools\scripts\CreateNuGetPackages.ps1
 		nuget\snadmin\install-aspose\manifest.xml = nuget\snadmin\install-aspose\manifest.xml
 		nuget\readme.txt = nuget\readme.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsposePreviewProvider.Install", "AsposePreviewProvider.Install\AsposePreviewProvider.Install.csproj", "{D0E64058-D5C8-4904-AABA-79924547EEE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsposePreviewProvider.Install", "AsposePreviewProvider.Install\AsposePreviewProvider.Install.csproj", "{D0E64058-D5C8-4904-AABA-79924547EEE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

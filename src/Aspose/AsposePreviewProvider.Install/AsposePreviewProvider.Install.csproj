@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell.exe $(SolutionDir)..\..\tools\scripts\CompressInstall.ps1" />
+    <Exec Command="powershell.exe $(SolutionDir)..\..\tools\scripts\CompressInstallAspose.ps1" />
   </Target>
 
   <ItemGroup>

@@ -296,3 +296,4 @@ __pycache__/
 /tools/scripts/*.nupkg
 /tools/scripts/*.zip
 /src/Aspose/AsposePreviewProvider.Install/install-preview-aspose.zip
+/src/Preview/Preview.Install/install-preview.zip

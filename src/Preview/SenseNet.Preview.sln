@@ -5,6 +5,7 @@ VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{378DDF9F-0FA8-4F81-9E03-0A6AD51973AB}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\tools\scripts\CompressInstallPreview.ps1 = ..\..\tools\scripts\CompressInstallPreview.ps1
 		..\..\tools\scripts\CreateNuGetPackages.ps1 = ..\..\tools\scripts\CreateNuGetPackages.ps1
 		nuget\snadmin\install-preview\manifest.xml = nuget\snadmin\install-preview\manifest.xml
 	EndProjectSection
