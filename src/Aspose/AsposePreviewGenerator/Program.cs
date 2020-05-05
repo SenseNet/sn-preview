@@ -8,8 +8,11 @@ using System.Net;
 using System.IO;
 using System.Drawing;
 using System.Collections.Specialized;
+using System.Net.Http;
 using System.Threading;
+using SenseNet.Client;
 using SenseNet.TaskManagement.Core;
+using ServerContext = SenseNet.Client.ServerContext;
 
 namespace SenseNet.Preview.AsposePreviewGenerator
 {
@@ -38,8 +41,17 @@ namespace SenseNet.Preview.AsposePreviewGenerator
 
             ServicePointManager.DefaultConnectionLimit = 10;
 
+            ClientContext.Current.AddServer(new ServerContext
+            {
+                Url = SiteUrl,
+
+                //UNDONE: remove auto-trust
+                IsTrusted = true
+            });
+
             try
             {
+                //UNDONE: make image generation async
                 GenerateImages();
             }
             catch (Exception ex)
@@ -73,6 +85,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
                     return;
                 }
 
+                //UNDONE: handle missing file: not an error!
                 var fileInfo = GetFileInfo();
 
                 if (fileInfo == null)
@@ -84,10 +97,10 @@ namespace SenseNet.Preview.AsposePreviewGenerator
 
                 downloadingSubtask.Progress(10, 100, 2, 110, "File info downloaded.");
 
-                contentPath = fileInfo["Path"].Value<string>();
+                contentPath = fileInfo.Path;
 
                 //UNDONE: uncomment license check
-                //CheckLicense(contentPath.Substring(contentPath.LastIndexOf('/') + 1));
+                //CheckLicense(fileInfo.Path.Substring(contentPath.LastIndexOf('/') + 1));
             }
             catch (Exception ex)
             {
@@ -100,105 +113,117 @@ namespace SenseNet.Preview.AsposePreviewGenerator
 //if (contentPath.EndsWith("overflow.txt", StringComparison.OrdinalIgnoreCase))
 //    Overflow();
 
-            using (var docStream = GetBinary())
+            using var docStream = GetBinary();
+            if (docStream == null)
             {
-                if (docStream == null)
-                {
-                    Logger.WriteWarning(ContentId, 0, string.Format("Document not found; maybe the content or its version {0} is missing.", Version));
-                    downloadingSubtask.Finish();
-                    return;
-                }
-
-                downloadingSubtask.Progress(100, 100, 10, 110, "File downloaded.");
-                
-                if (docStream.Length == 0)
-                {
-                    SetPreviewStatus(0); // PreviewStatus.EmptyDocument
-                    downloadingSubtask.Finish();
-                    return;
-                }
+                Logger.WriteWarning(ContentId, 0, $"Document not found; maybe the content or its version {Version} is missing.");
                 downloadingSubtask.Finish();
-
-                _generatingPreviewSubtask = new SnSubtask("Generating images");
-                _generatingPreviewSubtask.Start();
-
-                var extension = contentPath.Substring(contentPath.LastIndexOf('.'));
-                PreviewImageGenerator.GeneratePreview(extension, docStream, new PreviewGenerationContext(
-                    ContentId, previewsFolderId, StartIndex, MaxPreviewCount, Configuration.PreviewResolution, Version));
-
-                _generatingPreviewSubtask.Finish();
+                return;
             }
+
+            downloadingSubtask.Progress(100, 100, 10, 110, "File downloaded.");
+                
+            if (docStream.Length == 0)
+            {
+                SetPreviewStatus(0); // PreviewStatus.EmptyDocument
+                downloadingSubtask.Finish();
+                return;
+            }
+            downloadingSubtask.Finish();
+
+            _generatingPreviewSubtask = new SnSubtask("Generating images");
+            _generatingPreviewSubtask.Start();
+
+            var extension = contentPath.Substring(contentPath.LastIndexOf('.'));
+            PreviewImageGenerator.GeneratePreview(extension, docStream, new PreviewGenerationContext(
+                ContentId, previewsFolderId, StartIndex, MaxPreviewCount, Configuration.PreviewResolution, Version));
+
+            _generatingPreviewSubtask.Finish();
         }
 
         // ================================================================================================== Communication with the portal
 
         private static int GetPreviewsFolderId()
         {
-            var url = GetUrl(SiteUrl, "GetPreviewsFolder", ContentId, new Dictionary<string, string> { { "version", Version } });
-            var json = GetResponseJson(url, "POST", string.Format("{{ empty: {0} }}", (StartIndex == 0).ToString().ToLower()));
+            try
+            {
+                var previewsFolder = RESTCaller.GetResponseJsonAsync(new ODataRequest
+                    {
+                        ContentId = ContentId,
+                        ActionName = "GetPreviewsFolder",
+                        Version = Version
+                    },
+                    method: HttpMethod.Post,
+                    postData: new {empty = StartIndex == 0}).GetAwaiter().GetResult();
 
-            return json != null && json["Id"] != null
-                ? json["Id"].Value<int>()
-                : 0;
+                return previewsFolder.Id;
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(ContentId, message: $"GetPreviewsFolderId error: {ex.Message}");
+            }
+
+            return 0;
         }
 
         private static Stream GetBinary()
         {
-            var fileUrl = string.Format("{0}/binaryhandler.ashx?nodeid={1}&propertyname=Binary&version={2}", SiteUrl, ContentId, Version);
-
-            var uri = new Uri(fileUrl);
-            var myReq = WebRequest.Create(uri);
             var documentStream = new MemoryStream();
 
-            SetAuthenticationForRequest(myReq);
-
-            try
-            {
-                using (var wr = myReq.GetResponse())
+            RESTCaller.GetStreamResponseAsync(ContentId, Version, response =>
                 {
-                    using (var rs = wr.GetResponseStream())
-                    {
-                        if (rs != null)
-                            rs.CopyTo(documentStream);
-                        else
-                            Logger.WriteWarning(ContentId, 0, "The downloaded binary stream is null.");
-                    }
-                }
-            }
-            catch (WebException ex)
-            {
-                // 404 means the document has been deleted or the version (e.g. a draft version) does not
-                // exist anymore. That is not an error, we should silently finish executing this task.
-                if (Tools.ContentNotFound(ex))
-                    return null;
+                    //UNDONE: handle 404 and other non-error messages (see below)
+                    response.Content.CopyToAsync(documentStream).GetAwaiter().GetResult();
+                    documentStream.Seek(0, SeekOrigin.Begin);
+                }, CancellationToken.None)
+                .GetAwaiter().GetResult();
 
-                Logger.WriteError(ContentId, 0, "Error during remote file access.", ex, StartIndex, Version);
+            //SetAuthenticationForRequest(myReq);
 
-                // We need to throw the error further to let the main catch block
-                // log the error and set the preview status to 'Error'.
-                throw;
-            }
+            //try
+            //{
+            //    using (var wr = myReq.GetResponse())
+            //    {
+            //        using (var rs = wr.GetResponseStream())
+            //        {
+            //            if (rs != null)
+            //                rs.CopyTo(documentStream);
+            //            else
+            //                Logger.WriteWarning(ContentId, 0, "The downloaded binary stream is null.");
+            //        }
+            //    }
+            //}
+            //catch (WebException ex)
+            //{
+            //    // 404 means the document has been deleted or the version (e.g. a draft version) does not
+            //    // exist anymore. That is not an error, we should silently finish executing this task.
+            //    if (Tools.ContentNotFound(ex))
+            //        return null;
+
+            //    Logger.WriteError(ContentId, 0, "Error during remote file access.", ex, StartIndex, Version);
+
+            //    // We need to throw the error further to let the main catch block
+            //    // log the error and set the preview status to 'Error'.
+            //    throw;
+            //}
 
             return documentStream;
         }
 
-        private static JToken GetFileInfo()
+        private static Content GetFileInfo()
         {
-            var url = GetUrl(SiteUrl, null, ContentId, new Dictionary<string, string> 
-            { 
-                { "version", Version }, 
-                { "$select", "Name,DisplayName,Path,CreatedById" },
-                { "metadata", "no" }
-            });
-
-            var json = GetResponseJson(url);
-
-            return json != null ? json["d"] : null;
+            return Content.LoadAsync(new ODataRequest
+            {
+                ContentId = ContentId,
+                Select = new[] { "Name", "DisplayName", "Path", "CreatedById" },
+                Version = Version,
+                Metadata = MetadataFormat.None
+            }).GetAwaiter().GetResult();
         }
 
         private static void SetPreviewStatus(int status)
         {
-            // REVIEWSTATUS ENUM in document provider
+            // PREVIEWSTATUS ENUM in document provider
 
             // NoProvider = -5,
             // Postponed = -4,
@@ -208,16 +233,20 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             // EmptyDocument = 0,
             // Ready = 1
 
-            var url = GetUrl(SiteUrl, "SetPreviewStatus", ContentId);
-
-            GetResponseContent(url, "POST", string.Format("{{ status: {0} }}", status));
+            RESTCaller.GetResponseStringAsync(new ODataRequest
+            {
+                ContentId = ContentId,
+                ActionName = "SetPreviewStatus"
+            }, HttpMethod.Post, JsonHelper.Serialize(new {status})).GetAwaiter().GetResult();
         }
 
         public static void SetPageCount(int pageCount)
         {
-            var url = GetUrl(SiteUrl, "SetPageCount", ContentId);
-
-            GetResponseContent(url, "POST", string.Format("{{ pageCount: {0} }}", pageCount));
+            RESTCaller.GetResponseStringAsync(new ODataRequest
+            {
+                ContentId = ContentId,
+                ActionName = "SetPageCount"
+            }, HttpMethod.Post, JsonHelper.Serialize(new { pageCount })).GetAwaiter().GetResult();
         }
 
         public static void SavePreviewAndThumbnail(Stream imageStream, int page, int previewsFolderId)
@@ -236,24 +265,19 @@ namespace SenseNet.Preview.AsposePreviewGenerator
         private static void SaveImageStream(Stream imageStream, string name, int page, int width, int height, int previewsFolderId)
         {
             imageStream.Seek(0, SeekOrigin.Begin);
-            using (var original = Image.FromStream(imageStream))
-            {
-                width = Math.Min(width, original.Width);
-                height = Math.Min(height, original.Height);
+            using var original = Image.FromStream(imageStream);
 
-                using (var resized = ResizeImage(original, width, height))
-                {
-                    if (resized == null)
-                        return;
+            width = Math.Min(width, original.Width);
+            height = Math.Min(height, original.Height);
 
-                    using (var memStream = new MemoryStream())
-                    {
-                        resized.Save(memStream, Common.PREVIEWIMAGEFORMAT);
+            using var resized = ResizeImage(original, width, height);
+            if (resized == null)
+                return;
 
-                        SaveImageStream(memStream, name, page, previewsFolderId);
-                    }
-                }
-            }
+            using var memStream = new MemoryStream();
+            resized.Save(memStream, Common.PREVIEWIMAGEFORMAT);
+
+            SaveImageStream(memStream, name, page, previewsFolderId);
         }
 
         private static void SaveImageStream(Stream imageStream, string previewName, int page, int previewsFolderId)
@@ -265,12 +289,15 @@ namespace SenseNet.Preview.AsposePreviewGenerator
                 var imageId = UploadImage(imageStream, previewsFolderId, previewName);
 
                 // set initial preview image properties (CreatedBy, Index, etc.)
-                var url = GetUrl(SiteUrl, "SetInitialPreviewProperties", imageId);
-
-                GetResponseContent(url, "POST");
+                RESTCaller.GetResponseStringAsync(new ODataRequest
+                {
+                    ContentId = imageId,
+                    ActionName = "SetInitialPreviewProperties"
+                }, HttpMethod.Post).GetAwaiter().GetResult();
             }
             catch (WebException ex)
             {
+                //UNDONE: handle exception, filter non-errors and retry
                 var logged = false;
 
                 if (ex.Response != null)
@@ -316,133 +343,30 @@ namespace SenseNet.Preview.AsposePreviewGenerator
         {
             if (File.Exists(EmptyImage))
             {
-                using (var emptyImage = Image.FromFile(EmptyImage))
-                {
-                    SaveImage(emptyImage, page, previewsFolderId);
-                }
+                using var emptyImage = Image.FromFile(EmptyImage);
+                SaveImage(emptyImage, page, previewsFolderId);
             }
             else
             {
-                using (var emptyImage = new Bitmap(16, 16))
-                {
-                    SaveImage(emptyImage, page, previewsFolderId);
-                }
+                using var emptyImage = new Bitmap(16, 16);
+                SaveImage(emptyImage, page, previewsFolderId);
             }
         }
 
         public static void SaveImage(Image image, int page, int previewsFolderId)
         {
-            using (var imgStream = new MemoryStream())
-            {
-                image.Save(imgStream, Common.PREVIEWIMAGEFORMAT);
-                SavePreviewAndThumbnail(imgStream, page, previewsFolderId);
-            }
+            using var imgStream = new MemoryStream();
+            image.Save(imgStream, Common.PREVIEWIMAGEFORMAT);
+            SavePreviewAndThumbnail(imgStream, page, previewsFolderId);
         }
 
         private static int UploadImage(Stream imageStream, int previewsFolderId, string imageName)
         {
-            var imageStreamLength = imageStream.Length;
-            var useChunk = imageStreamLength > Configuration.ChunkSizeInBytes;
-            var url = GetUrl(SiteUrl, "Upload", previewsFolderId, new Dictionary<string, string> { { "create", "1" }, { "Overwrite", "true" } });
-            var uploadedImageId = 0;
-            var retryCount = 0;
-            var token = string.Empty;
+            //UNDONE: retry upload a couple of times
+            var image = Content.UploadAsync(previewsFolderId, imageName, imageStream, "PreviewImage")
+                .GetAwaiter().GetResult();
 
-            // send initial request
-            while (retryCount < REQUEST_RETRY_COUNT)
-            {
-                try
-                {
-                    var myReq = GetInitWebRequest(url, imageStreamLength, imageName);
-
-                    using (var wr = myReq.GetResponse())
-                    {
-                        using (var stream = wr.GetResponseStream())
-                        {
-                            using (var reader = new StreamReader(stream))
-                            {
-                                token = reader.ReadToEnd();
-                            }
-                        }
-                    }
-
-                    // succesful request: skip out from retry loop
-                    break;
-                }
-                catch (WebException)
-                {
-                    if (retryCount >= REQUEST_RETRY_COUNT - 1)
-                        throw;
-                    
-                    Thread.Sleep(50);
-                }
-
-                retryCount++;
-            }
-
-            var boundary = "---------------------------" + DateTime.UtcNow.Ticks.ToString("x");
-            var trailer = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
-
-            // send subsequent requests
-            var buffer = new byte[Configuration.ChunkSizeInBytes];
-            int bytesRead;
-            var start = 0;
-
-            while ((bytesRead = imageStream.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                url = GetUrl(SiteUrl, "Upload", previewsFolderId, new Dictionary<string, string> { { "Overwrite", "true" } });
-
-                retryCount = 0;
-
-                // get the request object for the actual chunk
-                while (retryCount < REQUEST_RETRY_COUNT)
-                {
-                    var chunkRequest = GetChunkWebRequest(url, imageStreamLength, imageName, token, boundary);
-
-                    if (useChunk)
-                        chunkRequest.Headers.Set("Content-Range", string.Format("bytes {0}-{1}/{2}", start, start + bytesRead - 1, imageStreamLength));
-
-                    // write the chunk into the request stream
-                    using (var reqStream = chunkRequest.GetRequestStream())
-                    {
-                        reqStream.Write(buffer, 0, bytesRead);
-                        reqStream.Write(trailer, 0, trailer.Length);
-                    }
-
-                    // send the request
-                    try
-                    {
-                        using (var wr = chunkRequest.GetResponse())
-                        {
-                            using (var stream = wr.GetResponseStream())
-                            {
-                                using (var reader = new StreamReader(stream))
-                                {
-                                    var imgContentJObject = JsonConvert.DeserializeObject(reader.ReadToEnd()) as JObject;
-
-                                    uploadedImageId = imgContentJObject["Id"].Value<int>();
-                                }
-                            }
-                        }
-
-                        // successful request: skip out from the retry loop
-                        break;
-                    }
-                    catch (WebException)
-                    {
-                        if (retryCount >= REQUEST_RETRY_COUNT - 1)
-                            throw;
-                        
-                        Thread.Sleep(50);
-                    }
-
-                    retryCount++;
-                }
-
-                start += bytesRead;
-            }
-
-            return uploadedImageId;
+            return image.Id;
         }
 
         // ================================================================================================== Helper methods
@@ -534,6 +458,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             }
         }
 
+        //UNDONE: handle retry in client requests and remove this method
         private static string GetResponseContent(string url, string verb = null, string body = null)
         {
             var retryCount = 0;
@@ -700,7 +625,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             /* *********************************************************** */
             
             //UNDONE: remove hardcoded parameters
-            ContentId = 1354;
+            ContentId = 1368;
             Version = "V1.0.A";
             StartIndex = 0;
             MaxPreviewCount = 3;
