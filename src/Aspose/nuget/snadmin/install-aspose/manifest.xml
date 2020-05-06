@@ -1,8 +1,8 @@
 <Package type='Install'>
   <Id>SenseNet.Preview.Aspose</Id>
   <Description>sensenet Preview Aspose</Description>
-  <ReleaseDate>2020-04-20</ReleaseDate>
-  <Version>7.2.1</Version>
+  <ReleaseDate>2020-05-04</ReleaseDate>
+  <Version>7.2.1.1</Version>
   <Dependencies>
     <Dependency id='SenseNet.Services' minVersion='7.2.0' />
     <Dependency id='SenseNet.Preview' minVersion='7.1.0' />
@@ -44,7 +44,7 @@
           </IfXmlNodeExists>
 
           <EditXmlNodes file="./web.config" xpath="/configuration/sensenet/providers/add[@key='DocumentPreviewProvider']/@value">
-            <Source>SenseNet.Preview.AsposePreviewProvider</Source>
+            <Source>SenseNet.Preview.Aspose.AsposePreviewProvider</Source>
           </EditXmlNodes>
         </Then>
       </IfFileExists>
@@ -54,8 +54,8 @@
       <EditJson Path="/Root/System/Settings/Indexing.settings">
         {
           TextExtractors: {
-            "pdf": "SenseNet.Preview.AsposePdfTextExtractor",
-            "rtf": "SenseNet.Preview.AsposeRtfTextExtractor"
+            "pdf": "SenseNet.Preview.Aspose.AsposePdfTextExtractor",
+            "rtf": "SenseNet.Preview.Aspose.AsposeRtfTextExtractor"
           }
         }
       </EditJson>

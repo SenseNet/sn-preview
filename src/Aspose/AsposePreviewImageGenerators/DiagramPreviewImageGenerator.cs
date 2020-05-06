@@ -3,7 +3,7 @@ using System.IO;
 using Aspose.Diagram;
 using Aspose.Diagram.Saving;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class DiagramPreviewImageGenerator : PreviewImageGenerator
     {

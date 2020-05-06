@@ -1,9 +1,11 @@
 ﻿using Aspose.Pdf.Text;
 using System.IO;
 using System.Threading.Tasks;
+using AsposePdf = Aspose.Pdf;
+using AsposeWords = Aspose.Words;
 using SenseNet.ContentRepository.Search.Indexing;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose
 {
     public class AsposePdfTextExtractor : TextExtractor
     {
@@ -14,7 +16,7 @@ namespace SenseNet.Preview
             Task.Run(() =>
             {
                 AsposePreviewProvider.CheckLicense(AsposePreviewProvider.LicenseProvider.Pdf);
-                var document = new Aspose.Pdf.Document(stream);
+                var document = new AsposePdf.Document(stream);
                 var textAbsorber = new TextAbsorber();
                 document.Pages.Accept(textAbsorber);
                 IndexingTools.AddTextExtract(context.VersionId, textAbsorber.Text);
@@ -35,7 +37,7 @@ namespace SenseNet.Preview
             {
                 AsposePreviewProvider.CheckLicense(AsposePreviewProvider.LicenseProvider.Words);
 
-                var document = new Aspose.Words.Document(stream);
+                var document = new AsposeWords.Document(stream);
 
                 IndexingTools.AddTextExtract(context.VersionId, document.GetText());
             });

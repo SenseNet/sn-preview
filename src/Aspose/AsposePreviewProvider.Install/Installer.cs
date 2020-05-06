@@ -1,8 +1,10 @@
 ﻿using SenseNet.ContentRepository;
+using SenseNet.Packaging;
 
-namespace SenseNet.Preview.Aspose.Install
+// ReSharper disable once CheckNamespace
+namespace SenseNet.Preview.Aspose
 {
-    public static class Installer
+    public static class InstallerExtensions
     {
         private const string InstallPackageName = "install-preview-aspose.zip";
 
@@ -10,9 +12,9 @@ namespace SenseNet.Preview.Aspose.Install
         /// Installs the sensenet Preview Aspose component.
         /// </summary>
         /// <param name="installer">Installer instance that contains the <see cref="RepositoryBuilder"/>.</param>
-        public static Packaging.Installer InstallPreviewAspose(this Packaging.Installer installer)
+        public static Installer InstallPreviewAspose(this Installer installer)
         {
-            installer.InstallPackage(typeof(Installer).Assembly, InstallPackageName);
+            installer.InstallPackage(typeof(InstallerExtensions).Assembly, InstallPackageName);
 
             return installer;
         }

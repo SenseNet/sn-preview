@@ -5,7 +5,7 @@ using Aspose.Imaging.FileFormats.Tiff;
 using Aspose.Imaging.ImageOptions;
 using SeekOrigin = System.IO.SeekOrigin;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class TiffPreviewImageGenerator : PreviewImageGenerator
     {

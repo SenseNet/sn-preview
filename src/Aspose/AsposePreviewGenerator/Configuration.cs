@@ -1,11 +1,11 @@
 ﻿using System.Configuration;
 
-namespace SenseNet.Preview.AsposePreviewGenerator
+namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
     public static class Configuration
     {
         private const string CHUNKSIZEKEY = "ChunkSize";
-        private const int DEFAULCHUNKSIZE = 10485760;
+        private const int DefaultChunkSize = 10485760;
         private static int? _chunkSizeInBytes;
         public static int ChunkSizeInBytes
         {
@@ -13,9 +13,8 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             {
                 if (!_chunkSizeInBytes.HasValue)
                 {
-                    int value;
-                    if (!int.TryParse(ConfigurationManager.AppSettings[CHUNKSIZEKEY], out value))
-                        value = DEFAULCHUNKSIZE;
+                    if (!int.TryParse(ConfigurationManager.AppSettings[CHUNKSIZEKEY], out var value))
+                        value = DefaultChunkSize;
                     _chunkSizeInBytes = value;
                 }
                 return _chunkSizeInBytes.Value;
@@ -32,8 +31,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
                 if (_previewResolution.HasValue) 
                     return _previewResolution.Value;
 
-                int value;
-                if (!int.TryParse(ConfigurationManager.AppSettings[PREVIEWRESOLUTIONKEY], out value))
+                if (!int.TryParse(ConfigurationManager.AppSettings[PREVIEWRESOLUTIONKEY], out var value))
                     value = DEFAULTPREVIEWRESOLUTION;
                 
                 _previewResolution = value;

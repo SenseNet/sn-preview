@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using SenseNet.TaskManagement.Core;
 
-namespace SenseNet.Preview.AsposePreviewGenerator
+namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
     internal class Logger
     {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Aspose.Email;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class EmailPreviewImageGenerator : PreviewImageGenerator
     {

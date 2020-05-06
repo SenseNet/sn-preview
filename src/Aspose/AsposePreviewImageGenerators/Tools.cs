@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using Newtonsoft.Json;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class Tools
     {

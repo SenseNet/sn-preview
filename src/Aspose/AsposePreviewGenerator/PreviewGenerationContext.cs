@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.IO;
 
-namespace SenseNet.Preview.AsposePreviewGenerator
+namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
     public class PreviewGenerationContext : IPreviewGenerationContext
     {

@@ -3,7 +3,7 @@ using System.IO;
 using Aspose.Pdf;
 using Aspose.Pdf.Devices;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class PdfPreviewImageGenerator : PreviewImageGenerator
     {
@@ -16,11 +16,9 @@ namespace SenseNet.Preview
             if (context.StartIndex == 0)
                 context.SetPageCount(document.Pages.Count);
 
-            int firstIndex;
-            int lastIndex;
             var loggedPageError = false;
 
-            context.SetIndexes(document.Pages.Count, out firstIndex, out lastIndex);
+            context.SetIndexes(document.Pages.Count, out var firstIndex, out var lastIndex);
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {

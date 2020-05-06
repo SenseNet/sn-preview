@@ -2,17 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Aspose.Cells;
-using Aspose.Pdf;
-using Aspose.Slides;
-using Aspose.Words;
+using AsposeCells = Aspose.Cells;
+using AsposeDiagram = Aspose.Diagram;
+using AsposeImaging = Aspose.Imaging;
+using AsposePdf = Aspose.Pdf;
+using AsposeSlides = Aspose.Slides;
+using AsposeEmail = Aspose.Email;
+using AsposeTasks = Aspose.Tasks;
+using AsposeWords = Aspose.Words;
 using Aspose.Words.Drawing;
 using SenseNet.ContentRepository;
 using SenseNet.Diagnostics;
 using SNCR = SenseNet.ContentRepository;
 using STORAGE = SenseNet.ContentRepository.Storage;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose
 {
     public class AsposePreviewProvider : DocumentPreviewProvider
     {
@@ -96,7 +100,7 @@ namespace SenseNet.Preview
             try
             {
                 var ms = new MemoryStream();
-                using var document = new Aspose.Pdf.Document();
+                using var document = new AsposePdf.Document();
                 var index = 1;
                 var pageAttributes = GetPageAttributes(content);            
                 var imageOptions = new PreviewImageOptions() { RestrictionType = restrictionType };
@@ -118,11 +122,11 @@ namespace SenseNet.Preview
                         // Compute dimensions using a SQUARE (max width and height are equal).
                         ComputeResizedDimensionsWithRotation(previewImage, PREVIEW_PDF_HEIGHT, rotation, out newWidth, out newHeight);
 
-                        var imageStamp = new ImageStamp(imgStream)
+                        var imageStamp = new AsposePdf.ImageStamp(imgStream)
                                              {
                                                  TopMargin = 10,
-                                                 HorizontalAlignment = Aspose.Pdf.HorizontalAlignment.Center,
-                                                 VerticalAlignment = Aspose.Pdf.VerticalAlignment.Top,
+                                                 HorizontalAlignment = AsposePdf.HorizontalAlignment.Center,
+                                                 VerticalAlignment = AsposePdf.VerticalAlignment.Top,
                                                  Width = newWidth,
                                                  Height = newHeight
                                              };
@@ -136,7 +140,7 @@ namespace SenseNet.Preview
                             // was landscape or the rotation made it that way.
                             if (newWidth > newHeight)
                             {
-                                page.Rotate = Rotation.on90;
+                                page.Rotate = AsposePdf.Rotation.on90;
                             }
 
                             page.AddStamp(imageStamp);
@@ -171,10 +175,10 @@ namespace SenseNet.Preview
             try
             {
                 var ms = new MemoryStream();
-                var document = new Aspose.Words.Document();
-                var builder = new DocumentBuilder(document);
+                var document = new AsposeWords.Document();
+                var builder = new AsposeWords.DocumentBuilder(document);
                 var index = 1;
-                var saveFormat = content.Name.ToLower().EndsWith(".docx") ? Aspose.Words.SaveFormat.Docx : Aspose.Words.SaveFormat.Doc;
+                var saveFormat = content.Name.ToLower().EndsWith(".docx") ? AsposeWords.SaveFormat.Docx : AsposeWords.SaveFormat.Doc;
                 var pageAttributes = GetPageAttributes(content);            
                 var imageOptions = new PreviewImageOptions() { RestrictionType = restrictionType };
 
@@ -207,22 +211,22 @@ namespace SenseNet.Preview
                             // Switch orientation only if needed.
                             if (newWidth > newHeight)
                             {
-                                if (builder.PageSetup.Orientation != Aspose.Words.Orientation.Landscape)
+                                if (builder.PageSetup.Orientation != AsposeWords.Orientation.Landscape)
                                 {
                                     if (index > 1)
-                                        builder.InsertBreak(BreakType.SectionBreakContinuous);
+                                        builder.InsertBreak(AsposeWords.BreakType.SectionBreakContinuous);
 
-                                    builder.PageSetup.Orientation = Aspose.Words.Orientation.Landscape;
+                                    builder.PageSetup.Orientation = AsposeWords.Orientation.Landscape;
                                 }
                             }
                             else
                             {
-                                if (builder.PageSetup.Orientation != Aspose.Words.Orientation.Portrait)
+                                if (builder.PageSetup.Orientation != AsposeWords.Orientation.Portrait)
                                 {
                                     if (index > 1)
-                                        builder.InsertBreak(BreakType.SectionBreakContinuous);
+                                        builder.InsertBreak(AsposeWords.BreakType.SectionBreakContinuous);
 
-                                    builder.PageSetup.Orientation = Aspose.Words.Orientation.Portrait;
+                                    builder.PageSetup.Orientation = AsposeWords.Orientation.Portrait;
                                 }
                             }
                             
@@ -266,9 +270,9 @@ namespace SenseNet.Preview
             {
                 var ms = new MemoryStream();
                 var oldExcel = content.Name.ToLower().EndsWith(".xls");
-                var fileFormat = oldExcel ? FileFormatType.Excel97To2003 : FileFormatType.Xlsx;
-                var saveFormat = oldExcel ? Aspose.Cells.SaveFormat.Excel97To2003 : Aspose.Cells.SaveFormat.Xlsx;
-                var document = new Workbook(fileFormat);
+                var fileFormat = oldExcel ? AsposeCells.FileFormatType.Excel97To2003 : AsposeCells.FileFormatType.Xlsx;
+                var saveFormat = oldExcel ? AsposeCells.SaveFormat.Excel97To2003 : AsposeCells.SaveFormat.Xlsx;
+                var document = new AsposeCells.Workbook(fileFormat);
                 var index = 1;
                 var imageOptions = new PreviewImageOptions() { RestrictionType = restrictionType };
 
@@ -324,8 +328,8 @@ namespace SenseNet.Preview
                 var ms = new MemoryStream();
                 var extension = ContentNamingProvider.GetFileExtension(content.Name).ToLower();
                 var oldPpt = Common.PRESENTATION_EXTENSIONS.Contains(extension);
-                var saveFormat = oldPpt ? Aspose.Slides.Export.SaveFormat.Ppt : Aspose.Slides.Export.SaveFormat.Pptx;
-                var docPresentation = new Presentation();
+                var saveFormat = oldPpt ? AsposeSlides.Export.SaveFormat.Ppt : AsposeSlides.Export.SaveFormat.Pptx;
+                var docPresentation = new AsposeSlides.Presentation();
                 var index = 1;
                 var imageOptions = new PreviewImageOptions() { RestrictionType = restrictionType };
 
@@ -348,7 +352,7 @@ namespace SenseNet.Preview
                                     slide = docPresentation.Slides[index - 1];
                                 }
 
-                                slide.Shapes.AddPictureFrame(Aspose.Slides.ShapeType.Rectangle, 10, 10,
+                                slide.Shapes.AddPictureFrame(AsposeSlides.ShapeType.Rectangle, 10, 10,
                                                              imageForDocument.Width, imageForDocument.Height,
                                                              img);
                             }
@@ -399,28 +403,28 @@ namespace SenseNet.Preview
                 switch (provider)
                 {
                     case LicenseProvider.Cells:
-                        new Aspose.Cells.License().SetLicense(licensePath);
+                        new AsposeCells.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Diagram:
-                        new Aspose.Diagram.License().SetLicense(licensePath);
+                        new AsposeDiagram.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Pdf:
-                        new Aspose.Pdf.License().SetLicense(licensePath);
+                        new AsposePdf.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Slides:
-                        new Aspose.Slides.License().SetLicense(licensePath);
+                        new AsposeSlides.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Words:
-                        new Aspose.Words.License().SetLicense(licensePath);
+                        new AsposeWords.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Tasks:
-                        new Aspose.Tasks.License().SetLicense(licensePath);
+                        new AsposeTasks.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Imaging:
-                        new Aspose.Imaging.License().SetLicense(licensePath);
+                        new AsposeImaging.License().SetLicense(licensePath);
                         break;
                     case LicenseProvider.Email:
-                        new Aspose.Email.License().SetLicense(licensePath);
+                        new AsposeEmail.License().SetLicense(licensePath);
                         break;
                 }
             }

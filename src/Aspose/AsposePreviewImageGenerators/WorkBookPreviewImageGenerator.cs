@@ -6,7 +6,7 @@ using Aspose.Cells;
 using Aspose.Cells.Drawing;
 using Aspose.Cells.Rendering;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class WorkBookPreviewImageGenerator : PreviewImageGenerator
     {

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using Aspose.Slides;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class PresentationPreviewImageGenerator : PreviewImageGenerator
     {
@@ -18,11 +18,9 @@ namespace SenseNet.Preview
             if (context.StartIndex == 0)
                 context.SetPageCount(pres.Slides.Count);
 
-            int firstIndex;
-            int lastIndex;
             var loggedPageError = false;
 
-            context.SetIndexes(pres.Slides.Count, out firstIndex, out lastIndex);
+            context.SetIndexes(pres.Slides.Count, out var firstIndex, out var lastIndex);
 
             // calculate size based on the original aspect ratio and the expected image size.
             var sizeF = pres.SlideSize.Size;

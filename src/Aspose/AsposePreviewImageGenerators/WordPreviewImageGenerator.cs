@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using Aspose.Words;
+using Aspose.Words.Saving;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class WordPreviewImageGenerator : PreviewImageGenerator
     {
@@ -9,7 +11,7 @@ namespace SenseNet.Preview
 
         public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
         {
-            var document = new Aspose.Words.Document(docStream);
+            var document = new Document(docStream);
             var pc = document.PageCount;
 
             // save the document only if this is the first round
@@ -19,11 +21,9 @@ namespace SenseNet.Preview
             if (pc <= 0)
                 return;
 
-            int firstIndex;
-            int lastIndex;
             var loggedPageError = false;
 
-            context.SetIndexes(pc, out firstIndex, out lastIndex);
+            context.SetIndexes(pc, out var firstIndex, out var lastIndex);
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {
@@ -31,7 +31,7 @@ namespace SenseNet.Preview
                 {
                     using (var imgStream = new MemoryStream())
                     {
-                        var options = new Aspose.Words.Saving.ImageSaveOptions(Aspose.Words.SaveFormat.Png)
+                        var options = new ImageSaveOptions(SaveFormat.Png)
                         {
                             PageIndex = i,
                             Resolution = context.PreviewResolution

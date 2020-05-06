@@ -11,10 +11,20 @@ using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading;
 using SenseNet.Client;
+using AsposeTools = SenseNet.Preview.Aspose.PreviewImageGenerators.Tools;
 using SenseNet.TaskManagement.Core;
 using ServerContext = SenseNet.Client.ServerContext;
+using AsposeWords = Aspose.Words;
+using AsposeImaging = Aspose.Imaging;
+using AsposeDiagram = Aspose.Diagram;
+using AsposeCells = Aspose.Cells;
+using AsposePdf = Aspose.Pdf;
+using AsposeSlides = Aspose.Slides;
+using AsposeEmail = Aspose.Email;
+using AsposeTasks = Aspose.Tasks;
+    
 
-namespace SenseNet.Preview.AsposePreviewGenerator
+namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
     internal class Program
     {
@@ -56,7 +66,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             }
             catch (Exception ex)
             {
-                if (Tools.ContentNotFound(ex as WebException))
+                if (AsposeTools.ContentNotFound(ex as WebException))
                     return;
 
                 Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version);
@@ -303,7 +313,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
                 if (ex.Response != null)
                 {
                     // a 404 must be handled by the caller
-                    if (Tools.ContentNotFound(ex))
+                    if (AsposeTools.ContentNotFound(ex))
                         throw;
 
                     string responseContent = null;
@@ -330,7 +340,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
                     }
 
                     // in case of status 500, we still have to terminate the process after logging the error
-                    if (Tools.IsTerminatorError(ex))
+                    if (AsposeTools.IsTerminatorError(ex))
                         throw;
                 }
 
@@ -625,7 +635,7 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             /* *********************************************************** */
             
             //UNDONE: remove hardcoded parameters
-            ContentId = 1368;
+            ContentId = 1140; //1368;
             Version = "V1.0.A";
             StartIndex = 0;
             MaxPreviewCount = 3;
@@ -676,28 +686,28 @@ namespace SenseNet.Preview.AsposePreviewGenerator
             try
             {
                 if (Common.WORD_EXTENSIONS.Contains(extension))
-                    new Aspose.Words.License().SetLicense(licensePath);
+                    new AsposeWords.License().SetLicense(licensePath);
                 else if (Common.IMAGE_EXTENSIONS.Contains(extension) || Common.TIFF_EXTENSIONS.Contains(extension))
-                    new Aspose.Imaging.License().SetLicense(licensePath);
+                    new AsposeImaging.License().SetLicense(licensePath);
                 else if (Common.DIAGRAM_EXTENSIONS.Contains(extension))
-                    new Aspose.Diagram.License().SetLicense(licensePath);
+                    new AsposeDiagram.License().SetLicense(licensePath);
                 else if (Common.WORKBOOK_EXTENSIONS.Contains(extension))
-                    new Aspose.Cells.License().SetLicense(licensePath);
+                    new AsposeCells.License().SetLicense(licensePath);
                 else if (Common.PDF_EXTENSIONS.Contains(extension))
-                    new Aspose.Pdf.License().SetLicense(licensePath);
+                    new AsposePdf.License().SetLicense(licensePath);
                 else if (Common.PRESENTATION_EXTENSIONS.Contains(extension) || Common.PRESENTATIONEX_EXTENSIONS.Contains(extension))
-                    new Aspose.Slides.License().SetLicense(licensePath);
+                    new AsposeSlides.License().SetLicense(licensePath);
                 else if (Common.EMAIL_EXTENSIONS.Contains(extension))
                 {
                     // we use Aspose.Word for generating preview images from msg files
-                    new Aspose.Email.License().SetLicense(licensePath);
-                    new Aspose.Words.License().SetLicense(licensePath);
+                    new AsposeEmail.License().SetLicense(licensePath);
+                    new AsposeWords.License().SetLicense(licensePath);
                 }
                 else if (Common.PROJECT_EXTENSIONS.Contains(extension))
                 {
                     // we use Aspose.Pdf for generating preview images from mpp files
-                    new Aspose.Tasks.License().SetLicense(licensePath);
-                    new Aspose.Pdf.License().SetLicense(licensePath);
+                    new AsposeTasks.License().SetLicense(licensePath);
+                    new AsposePdf.License().SetLicense(licensePath);
                 }
             }
             catch (Exception ex)

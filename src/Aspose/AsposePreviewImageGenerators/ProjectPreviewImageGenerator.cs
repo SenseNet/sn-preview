@@ -2,7 +2,7 @@
 using Aspose.Tasks;
 using Aspose.Tasks.Saving;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class ProjectPreviewImageGenerator : PreviewImageGenerator
     {

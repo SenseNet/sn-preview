@@ -3,10 +3,9 @@ using System.IO;
 using System.Net;
 using Aspose.Imaging;
 using Aspose.Imaging.ImageOptions;
-using SenseNet.Preview;
 using SeekOrigin = System.IO.SeekOrigin;
 
-namespace SenseNet.Preview
+namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class ImagePreviewImageGenerator : PreviewImageGenerator
     {

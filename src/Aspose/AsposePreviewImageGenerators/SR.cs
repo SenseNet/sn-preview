@@ -1,4 +1,4 @@
-﻿namespace SenseNet.Preview
+﻿namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     internal static class SR
     {

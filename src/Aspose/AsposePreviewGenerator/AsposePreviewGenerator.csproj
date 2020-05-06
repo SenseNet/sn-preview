@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Version>7.1.0.1</Version>
-    <RootNamespace>SenseNet.Preview.AsposePreviewGenerator</RootNamespace>
+    <RootNamespace>SenseNet.Preview.Aspose.AsposePreviewGenerator</RootNamespace>
     <AssemblyName>AsposePreviewGenerator</AssemblyName>
     <Authors>kavics,tusmester,aniko</Authors>
     <Company>Sense/Net Inc.</Company>
