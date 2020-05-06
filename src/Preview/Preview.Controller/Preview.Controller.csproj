@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>SenseNet.Preview.Controller</PackageId>
     <AssemblyName>SenseNet.Preview.Controller</AssemblyName>
+    <RootNamespace>SenseNet.Preview.Controller</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>7.2.0.1</Version>
     <Authors>kavics,tusmester,aniko,lajos,bezoo</Authors>
