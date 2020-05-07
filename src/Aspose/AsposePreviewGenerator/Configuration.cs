@@ -2,6 +2,7 @@
 
 namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
+    //UNDONE: refactor configuration to use the modern API with a fallback
     public static class Configuration
     {
         private const string CHUNKSIZEKEY = "ChunkSize";
@@ -39,6 +40,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 return _previewResolution.Value;
             }
         }
+
+        //UNDONE: get client secret from configuration
+        public static string ClientSecret => "secret";
 
         public static string ODataServiceToken { get; internal set; } =
             ConfigurationManager.AppSettings["ODataServiceToken"] ?? "odata.svc";

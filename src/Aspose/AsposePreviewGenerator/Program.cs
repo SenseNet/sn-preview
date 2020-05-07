@@ -10,7 +10,10 @@ using System.Drawing;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
+using IdentityModel.Client;
 using SenseNet.Client;
+using SenseNet.Diagnostics;
 using AsposeTools = SenseNet.Preview.Aspose.PreviewImageGenerators.Tools;
 using SenseNet.TaskManagement.Core;
 using ServerContext = SenseNet.Client.ServerContext;
@@ -41,7 +44,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
         private static SnSubtask _generatingPreviewSubtask;
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             if (!ParseParameters(args))
             {
@@ -54,10 +57,27 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             ClientContext.Current.AddServer(new ServerContext
             {
                 Url = SiteUrl,
+                Username = Username,
+                Password = Password,
 
                 //UNDONE: remove auto-trust
                 IsTrusted = true
             });
+
+            try
+            {
+                var token = await GetAccessTokenAsync();
+                ClientContext.Current.Server.Authentication.AccessToken = token;
+
+                if (string.IsNullOrEmpty(token))
+                    SnTrace.System.Write("Access token is empty, fallback to user name and password.");
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version, message:
+                    $"Authentication failed for site {SiteUrl}: {ex.Message}");
+                return;
+            }
 
             try
             {
@@ -552,6 +572,67 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 var usernamePassword = Username + ":" + Password;
                 myReq.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(new ASCIIEncoding().GetBytes(usernamePassword)));
             }
+        }
+
+        private static async Task<string> GetAccessTokenAsync()
+        {
+            // get the configured authority from the sensenet service
+            dynamic authInfo;
+            try
+            {
+                authInfo = await RESTCaller.GetResponseJsonAsync(new ODataRequest
+                {
+                    Path = "/Root",
+                    ActionName = "GetClientRequestParameters",
+                    Parameters = { { "clientType", "client" } }
+                }).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Could not retrieve authentication info. This is OK in case of
+                // an old content repository.
+                SnTrace.System.Write($"Authority information could not be retrieved from the service: {SiteUrl}");
+                return string.Empty;
+            }
+
+            string authority = authInfo.authority;
+
+            SnTrace.System.Write($"Authority {authority} got from the service {authority}");
+
+            // discover endpoints from metadata
+            var client = new HttpClient();
+            var disco = await client.GetDiscoveryDocumentAsync(authority);
+            if (disco.IsError)
+            {
+                var message = $"Authority {authority} responded with an error: {disco.Error}, " +
+                               "discovery document could not be retrieved.";
+
+                throw new InvalidOperationException(message, disco.Exception);
+            }
+
+            SnTrace.System.Write("Discovery document received successfully.");
+
+            // request token
+            var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+
+                ClientId = authInfo.client_id,
+                ClientSecret = Configuration.ClientSecret,
+                Scope = "sensenet"
+            }).ConfigureAwait(false);
+
+            if (tokenResponse.IsError)
+            {
+                var message = $"Authority {authority} responded with an error: {tokenResponse.Error}, " +
+                              "access token could not be retrieved.";
+
+                throw new InvalidOperationException(message, tokenResponse.Exception);
+            }
+
+            SnTrace.System.Write("Client credentials access token received successfully.");
+
+            return tokenResponse.AccessToken;
         }
 
         private static WebRequest GetInitWebRequest(string url, long fileLength, string fileName)
