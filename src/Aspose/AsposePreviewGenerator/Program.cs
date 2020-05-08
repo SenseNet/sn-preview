@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -14,6 +13,7 @@ using SenseNet.Client;
 using SenseNet.Diagnostics;
 using AsposeTools = SenseNet.Preview.Aspose.PreviewImageGenerators.Tools;
 using SenseNet.TaskManagement.Core;
+using SenseNet.Tools;
 using ServerContext = SenseNet.Client.ServerContext;
 using AsposeWords = Aspose.Words;
 using AsposeImaging = Aspose.Imaging;
@@ -63,6 +63,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             }
             catch (Exception ex)
             {
+                //UNDONE: check if the NotFound feature still works
                 if (AsposeTools.ContentNotFound(ex as WebException))
                     return;
 
@@ -190,14 +191,14 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         {
             try
             {
-                var previewsFolder = RESTCaller.GetResponseJsonAsync(new ODataRequest
+                var previewsFolder = GetResponseJsonAsync(new ODataRequest
                     {
                         ContentId = ContentId,
                         ActionName = "GetPreviewsFolder",
                         Version = Version
                     },
-                    method: HttpMethod.Post,
-                    postData: new {empty = StartIndex == 0}).GetAwaiter().GetResult();
+                    HttpMethod.Post,
+                    new {empty = StartIndex == 0}).GetAwaiter().GetResult();
 
                 return previewsFolder.Id;
             }
@@ -275,21 +276,13 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             // InProgress = -1,
             // EmptyDocument = 0,
             // Ready = 1
-
-            RESTCaller.GetResponseStringAsync(new ODataRequest
-            {
-                ContentId = ContentId,
-                ActionName = "SetPreviewStatus"
-            }, HttpMethod.Post, JsonHelper.Serialize(new {status})).GetAwaiter().GetResult();
+            
+            PostAsync("SetPreviewStatus", new {status}).GetAwaiter().GetResult();
         }
 
         public static void SetPageCount(int pageCount)
         {
-            RESTCaller.GetResponseStringAsync(new ODataRequest
-            {
-                ContentId = ContentId,
-                ActionName = "SetPageCount"
-            }, HttpMethod.Post, JsonHelper.Serialize(new { pageCount })).GetAwaiter().GetResult();
+            PostAsync("SetPageCount", new { pageCount }).GetAwaiter().GetResult();
         }
 
         public static void SavePreviewAndThumbnail(Stream imageStream, int page, int previewsFolderId)
@@ -322,21 +315,16 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             SaveImageStream(memStream, name, page, previewsFolderId);
         }
-
         private static void SaveImageStream(Stream imageStream, string previewName, int page, int previewsFolderId)
         {
             imageStream.Seek(0, SeekOrigin.Begin);
 
             try
             {
-                var imageId = UploadImage(imageStream, previewsFolderId, previewName);
+                var imageId = UploadImage(imageStream, previewsFolderId, previewName).GetAwaiter().GetResult();
 
                 // set initial preview image properties (CreatedBy, Index, etc.)
-                RESTCaller.GetResponseStringAsync(new ODataRequest
-                {
-                    ContentId = imageId,
-                    ActionName = "SetInitialPreviewProperties"
-                }, HttpMethod.Post).GetAwaiter().GetResult();
+                PostAsync(imageId, "SetInitialPreviewProperties").GetAwaiter().GetResult();
             }
             catch (WebException ex)
             {
@@ -381,7 +369,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                     Logger.WriteError(ContentId, page, "Error during uploading a preview image.", ex, StartIndex, Version);
             }
         }
-
         public static void SaveEmptyPreview(int page, int previewsFolderId)
         {
             if (File.Exists(EmptyImage))
@@ -395,7 +382,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 SaveImage(emptyImage, page, previewsFolderId);
             }
         }
-
         public static void SaveImage(Image image, int page, int previewsFolderId)
         {
             using var imgStream = new MemoryStream();
@@ -403,13 +389,26 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             SavePreviewAndThumbnail(imgStream, page, previewsFolderId);
         }
 
-        private static int UploadImage(Stream imageStream, int previewsFolderId, string imageName)
+        private static async Task<int> UploadImage(Stream imageStream, int previewsFolderId, string imageName)
         {
-            //UNDONE: retry upload a couple of times
-            var image = Content.UploadAsync(previewsFolderId, imageName, imageStream, "PreviewImage")
-                .GetAwaiter().GetResult();
+            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50, async () =>
+            {
+                imageStream.Seek(0, SeekOrigin.Begin);
 
-            return image.Id;
+                var image = await Content.UploadAsync(previewsFolderId, imageName, 
+                    imageStream, "PreviewImage").ConfigureAwait(false);
+
+                return image.Id;
+            }, (result, count, ex) =>
+            {
+                if (ex == null)
+                    return true;
+
+                if (count == 1)
+                    throw ex;
+
+                return false;
+            });
         }
 
         // ================================================================================================== Helper methods
@@ -424,7 +423,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         {
             return string.Format(Common.PREVIEW_IMAGENAME, page);
         }
-
         private static string GetThumbnailNameFromPageNumber(int page)
         {
             return string.Format(Common.THUMBNAIL_IMAGENAME, page);
@@ -464,7 +462,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 return null;
             }
         }
-
         private static void ComputeResizedDimensions(int originalWidth, int originalHeight, int maxWidth, int maxHeight, out int newWidth, out int newHeight)
         {
             // do not scale up the image
@@ -488,93 +485,58 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             newHeight = Math.Max(1, (int)Math.Round(originalHeight * percent));
         }
 
-        private static JToken GetResponseJson(string url, string verb = null, string body = null)
+        private static Task<string> PostAsync(string actionName, object body = null)
         {
-            var responseText = GetResponseContent(url, verb, body);
+            return PostAsync(ContentId, actionName, body);
+        }
+        private static Task<string> PostAsync(int contentId, string actionName, object body = null)
+        {
+            var bodyText = body == null
+                ? null
+                : JsonHelper.Serialize(body);
 
-            try
+            return GetResponseStringAsync(new ODataRequest
             {
-                return string.IsNullOrEmpty(responseText) ? null : (JsonConvert.DeserializeObject(responseText) as JObject);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error during deserializing JSON response: " + responseText, ex);
-            }
+                ContentId = contentId,
+                ActionName = actionName
+            }, HttpMethod.Post, bodyText);
         }
 
-        //UNDONE: handle retry in client requests and remove this method
-        private static string GetResponseContent(string url, string verb = null, string body = null)
+        private static async Task<string> GetResponseStringAsync(ODataRequest request, HttpMethod method = null, string body = null)
         {
-            var retryCount = 0;
-
-            while (retryCount < REQUEST_RETRY_COUNT)
-            {
-                var uri = new Uri(url);
-                var myRequest = WebRequest.Create(uri);
-
-                SetAuthenticationForRequest(myRequest);
-
-                if (!string.IsNullOrEmpty(verb))
+            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
+                async () => await RESTCaller.GetResponseStringAsync(request, method ?? HttpMethod.Get, body),
+                (result, count, ex) =>
                 {
-                    myRequest.Method = verb;
-                }
+                    if (ex == null)
+                        return true;
 
-                if (!string.IsNullOrEmpty(body))
+                    // last try: throw the exception
+                    if (count == 1)
+                        throw ex;
+
+                    // failed, but give them a new chance
+                    return false;
+                });
+        }
+        private static async Task<dynamic> GetResponseJsonAsync(ODataRequest request, HttpMethod method = null, object body = null)
+        {
+            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
+                async () => await RESTCaller.GetResponseJsonAsync(request, method: method ?? HttpMethod.Get, postData: body),
+                (result, count, ex) =>
                 {
-                    myRequest.ContentLength = body.Length;
+                    if (ex == null)
+                        return true;
 
-                    using (var requestWriter = new StreamWriter(myRequest.GetRequestStream()))
-                    {
-                        requestWriter.Write(body);
-                    }
-                }
-                else
-                {
-                    myRequest.ContentLength = 0;
-                }
+                    // last try: throw the exception
+                    if (count == 1)
+                        throw ex;
 
-                try
-                {
-                    using (var wr = myRequest.GetResponse())
-                    {
-                        using (var stream = wr.GetResponseStream())
-                        {
-                            using (var reader = new StreamReader(stream))
-                            {
-                                return reader.ReadToEnd();
-                            }
-                        }
-                    }
-                }
-                catch (WebException)
-                {
-                    if (retryCount >= REQUEST_RETRY_COUNT - 1)
-                        throw;
-                    
-                    Thread.Sleep(50);
-                }
-
-                retryCount++;
-            }
-
-            return string.Empty;
+                    // failed, but give them a new chance
+                    return false;
+                });
         }
         
-        private static void SetAuthenticationForRequest(WebRequest myReq)
-        {
-            if (string.IsNullOrEmpty(Username))
-            {
-                // use NTLM authentication
-                myReq.Credentials = CredentialCache.DefaultCredentials;
-            }
-            else
-            {
-                // use basic authentication
-                var usernamePassword = Username + ":" + Password;
-                myReq.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(new ASCIIEncoding().GetBytes(usernamePassword)));
-            }
-        }
-
         private static async Task<string> GetAccessTokenAsync()
         {
             // get the configured authority from the sensenet service
@@ -635,30 +597,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             return tokenResponse.AccessToken;
         }
-
-        private static WebRequest GetInitWebRequest(string url, long fileLength, string fileName)
-        {
-            var myReq = WebRequest.Create(new Uri(url));
-            myReq.Method = "POST";
-
-            SetAuthenticationForRequest(myReq);
-
-            myReq.ContentType = "application/x-www-form-urlencoded";
-
-            var useChunk = fileLength > Config.Upload.ChunkSize;
-            var postData = string.Format("ContentType=PreviewImage&FileName={0}&Overwrite=true&UseChunk={1}", fileName, useChunk);
-            var postDataBytes = Encoding.ASCII.GetBytes(postData);
-
-            myReq.ContentLength = postDataBytes.Length;
-
-            using (var reqStream = myReq.GetRequestStream())
-            {
-                reqStream.Write(postDataBytes, 0, postDataBytes.Length);
-            }
-
-            return myReq;
-        }
-
+        
         private static bool ParseParameters(string[] args)
         {
             /* *********************************************************** */
@@ -702,7 +641,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             return ContentId > 0 && !string.IsNullOrEmpty(Version) && StartIndex >= 0 && MaxPreviewCount > 0 && !string.IsNullOrEmpty(SiteUrl);
         }
-
         private static string GetParameterValue(string arg)
         {
             return arg.Substring(arg.IndexOf(":") + 1).TrimStart(new char[] { '\'', '"' }).TrimEnd(new char[] { '\'', '"' });
