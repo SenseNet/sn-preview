@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
@@ -7,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
 using System.Drawing;
-using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +37,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         public static string Username { get; set; }
         public static string Password { get; set; }
 
+        // shortcut
+        public static Configuration Config => Configuration.Instance;
+
         private static int REQUEST_RETRY_COUNT = 3;
         private static string EmptyImage = "empty.png";
 
@@ -52,32 +53,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 return;
             }
 
-            ServicePointManager.DefaultConnectionLimit = 10;
-
-            ClientContext.Current.AddServer(new ServerContext
-            {
-                Url = SiteUrl,
-                Username = Username,
-                Password = Password,
-
-                //UNDONE: remove auto-trust
-                IsTrusted = true
-            });
-
-            try
-            {
-                var token = await GetAccessTokenAsync();
-                ClientContext.Current.Server.Authentication.AccessToken = token;
-
-                if (string.IsNullOrEmpty(token))
-                    SnTrace.System.Write("Access token is empty, fallback to user name and password.");
-            }
-            catch (Exception ex)
-            {
-                Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version, message:
-                    $"Authentication failed for site {SiteUrl}: {ex.Message}");
+            if (!await InitializeAsync())
                 return;
-            }
 
             try
             {
@@ -93,6 +70,41 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 SetPreviewStatus(-3); // PreviewStatus.Error
             }
+        }
+
+        private static async Task<bool> InitializeAsync()
+        {
+            SnTrace.EnableAll();
+            Configuration.Initialize();
+
+            ServicePointManager.DefaultConnectionLimit = 10;
+
+            ClientContext.Current.ChunkSizeInBytes = Config.Upload.ChunkSize;
+            ClientContext.Current.AddServer(new ServerContext
+            {
+                Url = SiteUrl,
+                Username = Username,
+                Password = Password,
+
+                IsTrusted = Config.Environment.IsDevelopment
+            });
+
+            try
+            {
+                var token = await GetAccessTokenAsync();
+                ClientContext.Current.Server.Authentication.AccessToken = token;
+
+                if (string.IsNullOrEmpty(token))
+                    SnTrace.System.Write("Access token is empty, fallback to user name and password.");
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version, message:
+                    $"Authentication failed for site {SiteUrl}: {ex.Message}");
+                return false;
+            }
+
+            return true;
         }
 
         // ================================================================================================== Preview generation
@@ -129,8 +141,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 contentPath = fileInfo.Path;
 
-                //UNDONE: uncomment license check
-                //CheckLicense(fileInfo.Path.Substring(contentPath.LastIndexOf('/') + 1));
+                if (Config.ImageGeneration.CheckLicense)
+                    CheckLicense(fileInfo.Path.Substring(contentPath.LastIndexOf('/') + 1));
             }
             catch (Exception ex)
             {
@@ -166,7 +178,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             var extension = contentPath.Substring(contentPath.LastIndexOf('.'));
             PreviewImageGenerator.GeneratePreview(extension, docStream, new PreviewGenerationContext(
-                ContentId, previewsFolderId, StartIndex, MaxPreviewCount, Configuration.PreviewResolution, Version));
+                ContentId, previewsFolderId, StartIndex, MaxPreviewCount, 
+                Config.ImageGeneration.PreviewResolution, Version));
 
             _generatingPreviewSubtask.Finish();
         }
@@ -434,7 +447,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             try
             {
                 var newImage = new Bitmap(newWidth, newHeight);
-                newImage.SetResolution(Configuration.PreviewResolution, Configuration.PreviewResolution);
+                newImage.SetResolution(Config.ImageGeneration.PreviewResolution, 
+                    Config.ImageGeneration.PreviewResolution);
 
                 using (var graphicsHandle = Graphics.FromImage(newImage))
                 {
@@ -545,20 +559,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             return string.Empty;
         }
-
-        private static string GetUrl(string siteUrl, string odataFunctionName = null, int contentId = 0, IDictionary<string, string> parameters = null)
-        {
-            var url = string.Format("{0}/" + Configuration.ODataServiceToken + "/Content({1})", siteUrl, contentId);
-
-            if (!string.IsNullOrEmpty(odataFunctionName))
-                url += "/" + odataFunctionName;
-
-            if (parameters != null && parameters.Keys.Count > 0)
-                url += "?" + string.Join("&", parameters.Select(dk => string.Format("{0}={1}", dk.Key, dk.Value)));
-
-            return url;
-        }
-
+        
         private static void SetAuthenticationForRequest(WebRequest myReq)
         {
             if (string.IsNullOrEmpty(Username))
@@ -618,7 +619,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 Address = disco.TokenEndpoint,
 
                 ClientId = authInfo.client_id,
-                ClientSecret = Configuration.ClientSecret,
+                ClientSecret = Config.Authentication.ClientSecret,
                 Scope = "sensenet"
             }).ConfigureAwait(false);
 
@@ -644,7 +645,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             myReq.ContentType = "application/x-www-form-urlencoded";
 
-            var useChunk = fileLength > Configuration.ChunkSizeInBytes;
+            var useChunk = fileLength > Config.Upload.ChunkSize;
             var postData = string.Format("ContentType=PreviewImage&FileName={0}&Overwrite=true&UseChunk={1}", fileName, useChunk);
             var postDataBytes = Encoding.ASCII.GetBytes(postData);
 
@@ -654,59 +655,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             {
                 reqStream.Write(postDataBytes, 0, postDataBytes.Length);
             }
-
-            return myReq;
-        }
-
-        private static WebRequest GetChunkWebRequest(string url, long fileLength, string fileName, string token, string boundary)
-        {
-            var myReq = (HttpWebRequest)WebRequest.Create(new Uri(url));
-
-            myReq.Method = "POST";
-            myReq.ContentType = "multipart/form-data; boundary=" + boundary;
-            myReq.KeepAlive = true;
-
-            SetAuthenticationForRequest(myReq);
-
-            myReq.Headers.Add("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-
-            var boundarybytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
-            var formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
-            var headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\n Content-Type: application/octet-stream\r\n\r\n";
-
-            var useChunk = fileLength > Configuration.ChunkSizeInBytes;
-            var postValues = new NameValueCollection
-                                 {
-                                     {"ContentType", "PreviewImage"},
-                                     {"FileName", fileName},
-                                     {"Overwrite", "true"},
-                                     {"UseChunk", useChunk.ToString()},
-                                     {"ChunkToken", token}
-                                 };
-
-            // we must not close the stream after this as we need to write 
-            // the chunk into it in the caller method
-            var reqStream = myReq.GetRequestStream();
-
-            // write form data values
-            foreach (string key in postValues.Keys)
-            {
-                reqStream.Write(boundarybytes, 0, boundarybytes.Length);
-
-                var formitem = string.Format(formdataTemplate, key, postValues[key]);
-                var formitembytes = Encoding.UTF8.GetBytes(formitem);
-
-                reqStream.Write(formitembytes, 0, formitembytes.Length);
-            }
-
-            // write a boundary
-            reqStream.Write(boundarybytes, 0, boundarybytes.Length);
-
-            // write file name and content type
-            var header = string.Format(headerTemplate, "files[]", fileName);
-            var headerbytes = Encoding.UTF8.GetBytes(header);
-
-            reqStream.Write(headerbytes, 0, headerbytes.Length);
 
             return myReq;
         }

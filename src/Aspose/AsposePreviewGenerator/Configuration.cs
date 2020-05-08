@@ -1,50 +1,70 @@
-﻿using System.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
+using SenseNet.Diagnostics;
 
 namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
-    //UNDONE: refactor configuration to use the modern API with a fallback
-    public static class Configuration
+    #region Helper classes
+    public class UploadConfig
     {
-        private const string CHUNKSIZEKEY = "ChunkSize";
-        private const int DefaultChunkSize = 10485760;
-        private static int? _chunkSizeInBytes;
-        public static int ChunkSizeInBytes
-        {
-            get
-            {
-                if (!_chunkSizeInBytes.HasValue)
-                {
-                    if (!int.TryParse(ConfigurationManager.AppSettings[CHUNKSIZEKEY], out var value))
-                        value = DefaultChunkSize;
-                    _chunkSizeInBytes = value;
-                }
-                return _chunkSizeInBytes.Value;
-            }
-        }
+        /// <summary>
+        /// Upload chunk size in bytes.
+        /// </summary>
+        public int ChunkSize { get; set; } = 10485760;
+    }
+    public class ImageGenerationConfig
+    {
+        public int PreviewResolution { get; set; } = 300;
+        public bool CheckLicense { get; set; } = true;
+    }
+    public class AuthenticationConfig
+    {
+        public string ClientSecret { get; set; } = "secret";
+    }
 
-        private const string PREVIEWRESOLUTIONKEY = "PreviewResolution";
-        private const int DEFAULTPREVIEWRESOLUTION = 300;
-        private static int? _previewResolution;
-        public static int PreviewResolution
-        {
-            get
-            {
-                if (_previewResolution.HasValue) 
-                    return _previewResolution.Value;
+    public class EnvironmentConfig
+    {
+        public bool IsDevelopment { get; set; }
+    }
 
-                if (!int.TryParse(ConfigurationManager.AppSettings[PREVIEWRESOLUTIONKEY], out var value))
-                    value = DEFAULTPREVIEWRESOLUTION;
+    #endregion
+
+    public class Configuration
+    {
+        public AuthenticationConfig Authentication { get; } = new AuthenticationConfig();
+        public UploadConfig Upload { get; } = new UploadConfig();
+        public ImageGenerationConfig ImageGeneration { get; } = new ImageGenerationConfig();
+        public EnvironmentConfig Environment { get; } = new EnvironmentConfig();
+        
+        internal static Configuration Instance { get; private set; }
+
+        public static void Initialize()
+        {
+            var configuration = new Configuration();
+
+            try
+            {
+                var configurationSource = new ConfigurationBuilder()
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddEnvironmentVariables()
+                        .Build();
+
+                configurationSource.Bind(configuration);
                 
-                _previewResolution = value;
+                var environmentName = configurationSource.GetValue("NETCORE_ENVIRONMENT", "Production");
 
-                return _previewResolution.Value;
+                configuration.Environment.IsDevelopment = string.Equals(environmentName, "Development",
+                    StringComparison.InvariantCultureIgnoreCase);
             }
+            catch (Exception ex)
+            {
+                SnTrace.System.WriteError($"Error loading configuration: {ex.Message}. Working with defaults.");
+            }
+
+            SnTrace.System.Write($"Configuration: chunk size: {configuration.Upload.ChunkSize}, " +
+                                 $"preview resolution: {configuration.ImageGeneration.PreviewResolution}");
+            
+            Instance = configuration;
         }
-
-        //UNDONE: get client secret from configuration
-        public static string ClientSecret => "secret";
-
-        public static string ODataServiceToken { get; internal set; } =
-            ConfigurationManager.AppSettings["ODataServiceToken"] ?? "odata.svc";
     }
 }
