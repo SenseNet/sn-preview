@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SenseNet.Preview
 {
@@ -13,12 +15,12 @@ namespace SenseNet.Preview
         int PreviewResolution { get; }
         string Version { get; }
 
-        void SetPageCount(int pageCount);
+        Task SetPageCountAsync(int pageCount, CancellationToken cancellationToken);
         void SetIndexes(int pageCount, out int firstIndex, out int lastIndex);
 
-        void SavePreviewAndThumbnail(Stream imgStream, int page);
-        void SaveEmptyPreview(int page);
-        void SaveImage(Bitmap image, int page);
+        Task SavePreviewAndThumbnailAsync(Stream imgStream, int page, CancellationToken cancellationToken);
+        Task SaveEmptyPreviewAsync(int page, CancellationToken cancellationToken);
+        Task SaveImageAsync(Bitmap image, int page, CancellationToken cancellationToken);
 
         void LogInfo(int page, string message);
         void LogWarning(int page, string message);
