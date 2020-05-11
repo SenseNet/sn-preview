@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Email;
 
 namespace SenseNet.Preview.Aspose.PreviewImageGenerators
@@ -7,7 +9,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".msg" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             var email = MailMessage.Load(docStream);
 
@@ -16,7 +19,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                 email.Save(emailStream, SaveOptions.DefaultMhtml);
                 emailStream.Position = 0;
 
-                new WordPreviewImageGenerator().GeneratePreview(emailStream, context);
+                await new WordPreviewImageGenerator().GeneratePreviewAsync(emailStream, context, 
+                    cancellationToken).ConfigureAwait(false);
             }
         }
     }

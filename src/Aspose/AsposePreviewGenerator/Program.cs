@@ -58,7 +58,10 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             try
             {
-                await GenerateImagesAsync();
+                //TODO: use the cancellation token to stop image generation manually
+                var tokenSource = new CancellationTokenSource();
+                
+                await GenerateImagesAsync(tokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -108,7 +111,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
         // ================================================================================================== Preview generation
 
-        private static async Task GenerateImagesAsync()
+        private static async Task GenerateImagesAsync(CancellationToken cancellationToken)
         {
             int previewsFolderId;
             string contentPath;
@@ -125,6 +128,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                     return;
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 previewsFolderId = await GetPreviewsFolderIdAsync();
                 if (previewsFolderId < 1)
                 {
@@ -134,6 +139,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 }
 
                 downloadingSubtask.Progress(10, 100, 2, 110, "File info downloaded.");
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 contentPath = fileInfo.Path;
 
@@ -162,7 +169,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             }
 
             downloadingSubtask.Progress(100, 100, 10, 110, "File downloaded.");
-                
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (docStream.Length == 0)
             {
                 await SetPreviewStatusAsync(0); // PreviewStatus.EmptyDocument
@@ -176,10 +185,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             var extension = contentPath.Substring(contentPath.LastIndexOf('.'));
 
-            //UNDONE: make preview generation async
-            PreviewImageGenerator.GeneratePreview(extension, docStream, new PreviewGenerationContext(
+            await PreviewImageGenerator.GeneratePreviewAsync(extension, docStream, new PreviewGenerationContext(
                 ContentId, previewsFolderId, StartIndex, MaxPreviewCount, 
-                Config.ImageGeneration.PreviewResolution, Version));
+                Config.ImageGeneration.PreviewResolution, Version), cancellationToken).ConfigureAwait(false);
 
             _generatingPreviewSubtask.Finish();
         }
@@ -269,24 +277,30 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             return PostAsync("SetPageCount", new { pageCount });
         }
 
-        public static async Task SavePreviewAndThumbnailAsync(Stream imageStream, int page, int previewsFolderId)
+        public static async Task SavePreviewAndThumbnailAsync(Stream imageStream, int page, int previewsFolderId,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // save main preview image
             await SaveImageStreamAsync(imageStream, GetPreviewNameFromPageNumber(page), page, 
-                Common.PREVIEW_WIDTH, Common.PREVIEW_HEIGHT, previewsFolderId);
+                Common.PREVIEW_WIDTH, Common.PREVIEW_HEIGHT, previewsFolderId, cancellationToken);
 
             var progress = ((page - StartIndex) * 2 - 1) * 100 / MaxPreviewCount / 2;
             _generatingPreviewSubtask.Progress(progress, 100, progress + 10, 110);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             // save smaller image for thumbnail
             await SaveImageStreamAsync(imageStream, GetThumbnailNameFromPageNumber(page), page, 
-                Common.THUMBNAIL_WIDTH, Common.THUMBNAIL_HEIGHT, previewsFolderId);
+                Common.THUMBNAIL_WIDTH, Common.THUMBNAIL_HEIGHT, previewsFolderId, cancellationToken);
 
             progress = (page - StartIndex) * 2 * 100 / MaxPreviewCount / 2;
             _generatingPreviewSubtask.Progress(progress, 100, progress + 10, 110);
         }
 
-        private static async Task SaveImageStreamAsync(Stream imageStream, string name, int page, int width, int height, int previewsFolderId)
+        private static async Task SaveImageStreamAsync(Stream imageStream, string name, int page, int width, int height, 
+            int previewsFolderId, CancellationToken cancellationToken)
         {
             imageStream.Seek(0, SeekOrigin.Begin);
             using var original = Image.FromStream(imageStream);
@@ -301,15 +315,20 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             await using var memStream = new MemoryStream();
             resized.Save(memStream, Common.PREVIEWIMAGEFORMAT);
 
-            await SaveImageStreamAsync(memStream, name, page, previewsFolderId);
+            await SaveImageStreamAsync(memStream, name, page, previewsFolderId, cancellationToken);
         }
-        private static async Task SaveImageStreamAsync(Stream imageStream, string previewName, int page, int previewsFolderId)
+        private static async Task SaveImageStreamAsync(Stream imageStream, string previewName, int page, int previewsFolderId,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             imageStream.Seek(0, SeekOrigin.Begin);
 
             try
             {
-                var imageId = await UploadImageAsync(imageStream, previewsFolderId, previewName);
+                var imageId = await UploadImageAsync(imageStream, previewsFolderId, previewName, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // set initial preview image properties (CreatedBy, Index, etc.)
                 await PostAsync(imageId, "SetInitialPreviewProperties");
@@ -331,27 +350,28 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                     throw;
             }
         }
-        public static async Task SaveEmptyPreviewAsync(int page, int previewsFolderId)
+        public static async Task SaveEmptyPreviewAsync(int page, int previewsFolderId, CancellationToken cancellationToken)
         {
             if (File.Exists(EmptyImage))
             {
                 using var emptyImage = Image.FromFile(EmptyImage);
-                await SaveImageAsync(emptyImage, page, previewsFolderId);
+                await SaveImageAsync(emptyImage, page, previewsFolderId, cancellationToken);
             }
             else
             {
                 using var emptyImage = new Bitmap(16, 16);
-                await SaveImageAsync(emptyImage, page, previewsFolderId);
+                await SaveImageAsync(emptyImage, page, previewsFolderId, cancellationToken);
             }
         }
-        public static Task SaveImageAsync(Image image, int page, int previewsFolderId)
+        public static Task SaveImageAsync(Image image, int page, int previewsFolderId, CancellationToken cancellationToken)
         {
             using var imgStream = new MemoryStream();
             image.Save(imgStream, Common.PREVIEWIMAGEFORMAT);
-            return SavePreviewAndThumbnailAsync(imgStream, page, previewsFolderId);
+            return SavePreviewAndThumbnailAsync(imgStream, page, previewsFolderId, cancellationToken);
         }
 
-        private static Task<int> UploadImageAsync(Stream imageStream, int previewsFolderId, string imageName)
+        private static Task<int> UploadImageAsync(Stream imageStream, int previewsFolderId, string imageName,
+            CancellationToken cancellationToken)
         {
             return Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50, async () =>
             {
@@ -359,7 +379,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 var image = await Content.UploadAsync(previewsFolderId, imageName,
                     imageStream, "PreviewImage").ConfigureAwait(false);
-
+                
                 return image.Id;
             }, (result, count, ex) =>
             {
@@ -368,6 +388,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 if (count == 1 || AsposeTools.ContentNotFound(ex))
                     throw ex;
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return false;
             });

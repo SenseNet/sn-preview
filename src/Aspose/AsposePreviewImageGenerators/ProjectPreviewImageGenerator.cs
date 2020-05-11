@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using Aspose.Tasks;
 using Aspose.Tasks.Saving;
 
@@ -8,7 +9,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".mpp" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async System.Threading.Tasks.Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             var document = new Project(docStream);
             
@@ -20,7 +22,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                 document.Save(pdfStream, SaveFileFormat.PDF);
 
                 // generate previews from the pdf document
-                new PdfPreviewImageGenerator().GeneratePreview(pdfStream, context);
+                await new PdfPreviewImageGenerator().GeneratePreviewAsync(pdfStream, context, cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
     }

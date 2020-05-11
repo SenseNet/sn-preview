@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Imaging;
 using Aspose.Imaging.ImageOptions;
 using SeekOrigin = System.IO.SeekOrigin;
@@ -11,14 +13,15 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".gif", ".jpg", ".jpeg", ".bmp", ".png", ".svg", ".exif", ".icon" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             docStream.Seek(0, SeekOrigin.Begin);
 
             var document = Image.Load(docStream);
 
             if (context.StartIndex == 0)
-                context.SetPageCount(1);
+                await context.SetPageCountAsync(1, cancellationToken).ConfigureAwait(false);
 
             using (var imgStream = new MemoryStream())
             {
@@ -27,7 +30,7 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 
                 try
                 {
-                    context.SavePreviewAndThumbnail(imgStream, 1);
+                    await context.SavePreviewAndThumbnailAsync(imgStream, 1, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

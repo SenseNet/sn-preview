@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SenseNet.Client;
 
@@ -38,7 +40,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
         /// saves an empty image in place of the one that failed.
         /// </summary>
         /// <returns>True if the process should be terminated.</returns>
-        public static bool HandlePageError(Exception ex, int page, IPreviewGenerationContext context, bool logEvent)
+        public static async Task<bool> HandlePageErrorAsync(Exception ex, int page, IPreviewGenerationContext context, 
+            bool logEvent, CancellationToken cancellationToken)
         {
             if (ContentNotFound(ex))
             {
@@ -63,7 +66,7 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
             // Substitute the wrong image with an empty one. This will prevent the
             // viewer plugin from registering preview tasks for missing images over and
             // over again.
-            context.SaveEmptyPreview(page);
+            await context.SaveEmptyPreviewAsync(page, cancellationToken).ConfigureAwait(false);
 
             return false;
         }

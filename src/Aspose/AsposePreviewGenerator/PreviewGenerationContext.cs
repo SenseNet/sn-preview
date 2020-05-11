@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 {
@@ -23,25 +25,25 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             Version = version;
         }
 
-        public void SetPageCount(int pageCount)
+        public Task SetPageCountAsync(int pageCount, CancellationToken cancellationToken)
         {
-            Program.SetPageCountAsync(pageCount).GetAwaiter().GetResult();
+            return Program.SetPageCountAsync(pageCount);
         }
         public void SetIndexes(int pageCount, out int firstIndex, out int lastIndex)
         {
             Program.SetIndexes(StartIndex, pageCount, out firstIndex, out lastIndex, MaxPreviewCount);
         }
-        public void SavePreviewAndThumbnail(Stream imgStream, int page)
+        public Task SavePreviewAndThumbnailAsync(Stream imgStream, int page, CancellationToken cancellationToken)
         {
-            Program.SavePreviewAndThumbnailAsync(imgStream, page, PreviewsFolderId).GetAwaiter().GetResult();
+            return Program.SavePreviewAndThumbnailAsync(imgStream, page, PreviewsFolderId, cancellationToken);
         }
-        public void SaveEmptyPreview(int page)
+        public Task SaveEmptyPreviewAsync(int page, CancellationToken cancellationToken)
         {
-            Program.SaveEmptyPreviewAsync(page, PreviewsFolderId).GetAwaiter().GetResult();
+            return Program.SaveEmptyPreviewAsync(page, PreviewsFolderId, cancellationToken);
         }
-        public void SaveImage(Bitmap image, int page)
+        public Task SaveImageAsync(Bitmap image, int page, CancellationToken cancellationToken)
         {
-            Program.SaveImageAsync(image, page, PreviewsFolderId).GetAwaiter().GetResult();
+            return Program.SaveImageAsync(image, page, PreviewsFolderId, cancellationToken);
         }
 
         public void LogInfo(int page, string message)

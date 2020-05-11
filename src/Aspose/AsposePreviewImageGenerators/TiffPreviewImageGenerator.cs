@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Imaging;
 using Aspose.Imaging.FileFormats.Tiff;
 using Aspose.Imaging.ImageOptions;
@@ -11,23 +13,24 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".tif", ".tiff" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             docStream.Seek(0, SeekOrigin.Begin);
 
             var document = (TiffImage)Image.Load(docStream);
 
             if (context.StartIndex == 0)
-                context.SetPageCount(document.Frames.Length);
+                await context.SetPageCountAsync(document.Frames.Length, cancellationToken).ConfigureAwait(false);
 
-            int firstIndex;
-            int lastIndex;
             var loggedPageError = false;
 
-            context.SetIndexes(document.Frames.Length, out firstIndex, out lastIndex);
+            context.SetIndexes(document.Frames.Length, out var firstIndex, out var lastIndex);
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     document.ActiveFrame = document.Frames[i];
@@ -36,12 +39,14 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                         var options = new PngOptions();
                         document.Save(imgStream, options);
 
-                        context.SavePreviewAndThumbnail(imgStream, i + 1);
+                        await context.SavePreviewAndThumbnailAsync(imgStream, i + 1, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (Tools.HandlePageError(ex, i + 1, context, !loggedPageError))
+                    if (await Tools.HandlePageErrorAsync(ex, i + 1, context, !loggedPageError,
+                        cancellationToken).ConfigureAwait(false))
                         return;
 
                     loggedPageError = true;

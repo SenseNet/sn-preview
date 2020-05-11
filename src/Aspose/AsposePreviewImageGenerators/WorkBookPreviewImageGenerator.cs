@@ -2,6 +2,8 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Cells;
 using Aspose.Cells.Drawing;
 using Aspose.Cells.Rendering;
@@ -12,7 +14,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".ods", ".xls", ".xlsm", ".xlsx", ".xltm", ".xltx" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             var document = new Workbook(docStream);
             var printOptions = new ImageOrPrintOptions
@@ -28,12 +31,9 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
             var estimatedPageCount = document.Worksheets.Select(w => new SheetRender(w, printOptions).PageCount).Sum();
 
             if (context.StartIndex == 0)
-                context.SetPageCount(estimatedPageCount);
+                await context.SetPageCountAsync(estimatedPageCount, cancellationToken).ConfigureAwait(false);
 
-            int firstIndex;
-            int lastIndex;
-
-            context.SetIndexes(estimatedPageCount, out firstIndex, out lastIndex);
+            context.SetIndexes(estimatedPageCount, out var firstIndex, out var lastIndex);
 
             var workbookPageIndex = 0;
             var worksheetIndex = 0;
@@ -42,6 +42,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
             // iterate through worksheets
             while (worksheetIndex < document.Worksheets.Count)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     var worksheet = document.Worksheets[worksheetIndex];
@@ -67,9 +69,11 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 
                                 // handle empty sheets
                                 if (imgStream.Length == 0)
-                                    context.SaveEmptyPreview(workbookPageIndex + 1);
+                                    await context.SaveEmptyPreviewAsync(workbookPageIndex + 1, cancellationToken)
+                                        .ConfigureAwait(false);
                                 else
-                                    context.SavePreviewAndThumbnail(imgStream, workbookPageIndex + 1);
+                                    await context.SavePreviewAndThumbnailAsync(imgStream, workbookPageIndex + 1, 
+                                        cancellationToken).ConfigureAwait(false);
                             }
                         }
 
@@ -78,7 +82,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                 }
                 catch (Exception ex)
                 {
-                    if (Tools.HandlePageError(ex, workbookPageIndex + 1, context, !loggedPageError))
+                    if (await Tools.HandlePageErrorAsync(ex, workbookPageIndex + 1, context, !loggedPageError,
+                        cancellationToken).ConfigureAwait(false))
                         return;
 
                     loggedPageError = true;
@@ -90,7 +95,7 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 
             // set the real count if some of the sheets turned out to be empty
             if (workbookPageIndex < estimatedPageCount)
-                context.SetPageCount(workbookPageIndex);
+                await context.SetPageCountAsync(workbookPageIndex, cancellationToken).ConfigureAwait(false);
         }
 
         private static ImageType GetImageType()

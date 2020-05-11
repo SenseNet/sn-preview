@@ -31,8 +31,8 @@
     <PackageReference Include="Aspose.Slides.NET" Version="20.4.0" />
     <PackageReference Include="Aspose.Tasks" Version="20.4.0" />
     <PackageReference Include="Aspose.Words" Version="20.4.0" />
-    <PackageReference Include="SenseNet.Preview" Version="7.1.0" />
-    <PackageReference Include="SenseNet.Preview.Controller" Version="7.2.0.1" />
+    <PackageReference Include="SenseNet.Preview" Version="7.1.0.1" />
+    <PackageReference Include="SenseNet.Preview.Controller" Version="7.2.0.2" />
     <PackageReference Include="SenseNet.Tools" Version="3.2.2" />
   </ItemGroup>
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Slides;
 
 namespace SenseNet.Preview.Aspose.PreviewImageGenerators
@@ -9,14 +11,15 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".pot", ".pps", ".ppt", ".potx", ".ppsx", ".pptx", ".odp" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             docStream.Seek(0, SeekOrigin.Begin);
 
             var pres = new Presentation(docStream);
 
             if (context.StartIndex == 0)
-                context.SetPageCount(pres.Slides.Count);
+                await context.SetPageCountAsync(pres.Slides.Count, cancellationToken).ConfigureAwait(false);
 
             var loggedPageError = false;
 
@@ -31,6 +34,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     var slide = pres.Slides[i];
@@ -38,12 +43,13 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                     // generate image
                     using (var image = slide.GetThumbnail(size))
                     {
-                        context.SaveImage(image, i + 1);
+                        await context.SaveImageAsync(image, i + 1, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (Tools.HandlePageError(ex, i + 1, context, !loggedPageError))
+                    if (await Tools.HandlePageErrorAsync(ex, i + 1, context, !loggedPageError,
+                        cancellationToken).ConfigureAwait(false))
                         return;
 
                     loggedPageError = true;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
@@ -9,14 +11,15 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
     {
         public override string[] KnownExtensions { get; } = { ".doc", ".docx", ".odt", ".rtf", ".txt", ".xml", ".csv" };
 
-        public override void GeneratePreview(Stream docStream, IPreviewGenerationContext context)
+        public override async Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context,
+            CancellationToken cancellationToken)
         {
             var document = new Document(docStream);
             var pc = document.PageCount;
 
             // save the document only if this is the first round
             if (context.StartIndex == 0 || pc < 1)
-                context.SetPageCount(pc);
+                await context.SetPageCountAsync(pc, cancellationToken).ConfigureAwait(false);
 
             if (pc <= 0)
                 return;
@@ -27,6 +30,8 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 
             for (var i = firstIndex; i <= lastIndex; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     using (var imgStream = new MemoryStream())
@@ -41,12 +46,14 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
                         if (imgStream.Length == 0)
                             continue;
 
-                        context.SavePreviewAndThumbnail(imgStream, i + 1);
+                        await context.SavePreviewAndThumbnailAsync(imgStream, i + 1, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (Tools.HandlePageError(ex, i + 1, context, !loggedPageError))
+                    if (await Tools.HandlePageErrorAsync(ex, i + 1, context, !loggedPageError,
+                        cancellationToken).ConfigureAwait(false))
                         return;
 
                     loggedPageError = true;
