@@ -15,17 +15,17 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         
         internal PreviewGenerationContext(int contentId, int previewsFolderId, int startIndex, int maxPreviewCount, int previewResolution, string version)
         {
-            this.ContentId = contentId;
-            this.PreviewsFolderId = previewsFolderId;
-            this.StartIndex = startIndex;
-            this.MaxPreviewCount = maxPreviewCount;
-            this.PreviewResolution = previewResolution;
-            this.Version = version;
+            ContentId = contentId;
+            PreviewsFolderId = previewsFolderId;
+            StartIndex = startIndex;
+            MaxPreviewCount = maxPreviewCount;
+            PreviewResolution = previewResolution;
+            Version = version;
         }
 
         public void SetPageCount(int pageCount)
         {
-            Program.SetPageCount(pageCount);
+            Program.SetPageCountAsync(pageCount).GetAwaiter().GetResult();
         }
         public void SetIndexes(int pageCount, out int firstIndex, out int lastIndex)
         {
@@ -33,15 +33,15 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         }
         public void SavePreviewAndThumbnail(Stream imgStream, int page)
         {
-            Program.SavePreviewAndThumbnail(imgStream, page, PreviewsFolderId);
+            Program.SavePreviewAndThumbnailAsync(imgStream, page, PreviewsFolderId).GetAwaiter().GetResult();
         }
         public void SaveEmptyPreview(int page)
         {
-            Program.SaveEmptyPreview(page, PreviewsFolderId);
+            Program.SaveEmptyPreviewAsync(page, PreviewsFolderId).GetAwaiter().GetResult();
         }
         public void SaveImage(Bitmap image, int page)
         {
-            Program.SaveImage(image, page, PreviewsFolderId);
+            Program.SaveImageAsync(image, page, PreviewsFolderId).GetAwaiter().GetResult();
         }
 
         public void LogInfo(int page, string message)

@@ -58,7 +58,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             try
             {
-                //UNDONE: make image generation async
                 await GenerateImagesAsync();
             }
             catch (Exception ex)
@@ -68,7 +67,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version);
 
-                SetPreviewStatus(-3); // PreviewStatus.Error
+                await SetPreviewStatusAsync(-3); // PreviewStatus.Error
             }
         }
 
@@ -154,7 +153,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             //    Overflow();
             #endregion
 
-            using var docStream = GetBinary();
+            await using var docStream = await GetBinaryAsync();
             if (docStream == null)
             {
                 Logger.WriteWarning(ContentId, 0, $"Document not found; maybe the content or its version {Version} is missing.");
@@ -166,7 +165,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 
             if (docStream.Length == 0)
             {
-                SetPreviewStatus(0); // PreviewStatus.EmptyDocument
+                await SetPreviewStatusAsync(0); // PreviewStatus.EmptyDocument
                 downloadingSubtask.Finish();
                 return;
             }
@@ -176,6 +175,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             _generatingPreviewSubtask.Start();
 
             var extension = contentPath.Substring(contentPath.LastIndexOf('.'));
+
+            //UNDONE: make preview generation async
             PreviewImageGenerator.GeneratePreview(extension, docStream, new PreviewGenerationContext(
                 ContentId, previewsFolderId, StartIndex, MaxPreviewCount, 
                 Config.ImageGeneration.PreviewResolution, Version));
@@ -207,23 +208,22 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             return 0;
         }
-        private static Stream GetBinary()
+        private static async Task<Stream> GetBinaryAsync()
         {
             var documentStream = new MemoryStream();
 
             try
             {
                 // download the whole file from the server
-                RESTCaller.GetStreamResponseAsync(ContentId, Version, response =>
+                await RESTCaller.GetStreamResponseAsync(ContentId, Version, async response =>
                     {
                         if (response == null)
                             throw new ClientException($"Content {ContentId} {Version} not found.", 
                                 HttpStatusCode.NotFound);
                         
-                        response.Content.CopyToAsync(documentStream).GetAwaiter().GetResult();
+                        await response.Content.CopyToAsync(documentStream).ConfigureAwait(false);
                         documentStream.Seek(0, SeekOrigin.Begin);
-                    }, CancellationToken.None)
-                    .GetAwaiter().GetResult();
+                    }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (ClientException ex)
             {
@@ -250,7 +250,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             });
         }
 
-        private static void SetPreviewStatus(int status)
+        private static Task SetPreviewStatusAsync(int status)
         {
             // PREVIEWSTATUS ENUM in document provider
 
@@ -261,28 +261,32 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             // InProgress = -1,
             // EmptyDocument = 0,
             // Ready = 1
-            
-            PostAsync("SetPreviewStatus", new {status}).GetAwaiter().GetResult();
+
+            return PostAsync("SetPreviewStatus", new {status});
         }
-        public static void SetPageCount(int pageCount)
+        public static Task SetPageCountAsync(int pageCount)
         {
-            PostAsync("SetPageCount", new { pageCount }).GetAwaiter().GetResult();
+            return PostAsync("SetPageCount", new { pageCount });
         }
 
-        public static void SavePreviewAndThumbnail(Stream imageStream, int page, int previewsFolderId)
+        public static async Task SavePreviewAndThumbnailAsync(Stream imageStream, int page, int previewsFolderId)
         {
             // save main preview image
-            SaveImageStream(imageStream, GetPreviewNameFromPageNumber(page), page, Common.PREVIEW_WIDTH, Common.PREVIEW_HEIGHT, previewsFolderId);
+            await SaveImageStreamAsync(imageStream, GetPreviewNameFromPageNumber(page), page, 
+                Common.PREVIEW_WIDTH, Common.PREVIEW_HEIGHT, previewsFolderId);
+
             var progress = ((page - StartIndex) * 2 - 1) * 100 / MaxPreviewCount / 2;
             _generatingPreviewSubtask.Progress(progress, 100, progress + 10, 110);
 
             // save smaller image for thumbnail
-            SaveImageStream(imageStream, GetThumbnailNameFromPageNumber(page), page, Common.THUMBNAIL_WIDTH, Common.THUMBNAIL_HEIGHT, previewsFolderId);
-            progress = ((page - StartIndex) * 2) * 100 / MaxPreviewCount / 2;
+            await SaveImageStreamAsync(imageStream, GetThumbnailNameFromPageNumber(page), page, 
+                Common.THUMBNAIL_WIDTH, Common.THUMBNAIL_HEIGHT, previewsFolderId);
+
+            progress = (page - StartIndex) * 2 * 100 / MaxPreviewCount / 2;
             _generatingPreviewSubtask.Progress(progress, 100, progress + 10, 110);
         }
 
-        private static void SaveImageStream(Stream imageStream, string name, int page, int width, int height, int previewsFolderId)
+        private static async Task SaveImageStreamAsync(Stream imageStream, string name, int page, int width, int height, int previewsFolderId)
         {
             imageStream.Seek(0, SeekOrigin.Begin);
             using var original = Image.FromStream(imageStream);
@@ -294,22 +298,21 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             if (resized == null)
                 return;
 
-            using var memStream = new MemoryStream();
+            await using var memStream = new MemoryStream();
             resized.Save(memStream, Common.PREVIEWIMAGEFORMAT);
 
-            SaveImageStream(memStream, name, page, previewsFolderId);
+            await SaveImageStreamAsync(memStream, name, page, previewsFolderId);
         }
-        private static void SaveImageStream(Stream imageStream, string previewName, int page, int previewsFolderId)
+        private static async Task SaveImageStreamAsync(Stream imageStream, string previewName, int page, int previewsFolderId)
         {
             imageStream.Seek(0, SeekOrigin.Begin);
 
             try
             {
-                //UNDONE: make image upload async
-                var imageId = UploadImage(imageStream, previewsFolderId, previewName).GetAwaiter().GetResult();
+                var imageId = await UploadImageAsync(imageStream, previewsFolderId, previewName);
 
                 // set initial preview image properties (CreatedBy, Index, etc.)
-                PostAsync(imageId, "SetInitialPreviewProperties").GetAwaiter().GetResult();
+                await PostAsync(imageId, "SetInitialPreviewProperties");
             }
             catch (ClientException ex)
             {
@@ -328,33 +331,33 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                     throw;
             }
         }
-        public static void SaveEmptyPreview(int page, int previewsFolderId)
+        public static async Task SaveEmptyPreviewAsync(int page, int previewsFolderId)
         {
             if (File.Exists(EmptyImage))
             {
                 using var emptyImage = Image.FromFile(EmptyImage);
-                SaveImage(emptyImage, page, previewsFolderId);
+                await SaveImageAsync(emptyImage, page, previewsFolderId);
             }
             else
             {
                 using var emptyImage = new Bitmap(16, 16);
-                SaveImage(emptyImage, page, previewsFolderId);
+                await SaveImageAsync(emptyImage, page, previewsFolderId);
             }
         }
-        public static void SaveImage(Image image, int page, int previewsFolderId)
+        public static Task SaveImageAsync(Image image, int page, int previewsFolderId)
         {
             using var imgStream = new MemoryStream();
             image.Save(imgStream, Common.PREVIEWIMAGEFORMAT);
-            SavePreviewAndThumbnail(imgStream, page, previewsFolderId);
+            return SavePreviewAndThumbnailAsync(imgStream, page, previewsFolderId);
         }
 
-        private static async Task<int> UploadImage(Stream imageStream, int previewsFolderId, string imageName)
+        private static Task<int> UploadImageAsync(Stream imageStream, int previewsFolderId, string imageName)
         {
-            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50, async () =>
+            return Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50, async () =>
             {
                 imageStream.Seek(0, SeekOrigin.Begin);
 
-                var image = await Content.UploadAsync(previewsFolderId, imageName, 
+                var image = await Content.UploadAsync(previewsFolderId, imageName,
                     imageStream, "PreviewImage").ConfigureAwait(false);
 
                 return image.Id;
@@ -396,10 +399,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             if (image.Width <= maxWidth && image.Height <= maxHeight)
                 return image;
 
-            int newWidth;
-            int newHeight;
-
-            ComputeResizedDimensions(image.Width, image.Height, maxWidth, maxHeight, out newWidth, out newHeight);
+            ComputeResizedDimensions(image.Width, image.Height, maxWidth, maxHeight, out var newWidth, out var newHeight);
 
             try
             {
@@ -415,9 +415,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                 return newImage;
             }
-            catch (OutOfMemoryException omex)
+            catch (OutOfMemoryException ex)
             {
-                Logger.WriteError(ContentId, message: "Out of memory error during image resizing.", ex: omex, startIndex: StartIndex, version: Version);
+                Logger.WriteError(ContentId, message: "Out of memory error during image resizing.", ex: ex, startIndex: StartIndex, version: Version);
                 return null;
             }
         }
@@ -461,9 +461,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             }, HttpMethod.Post, bodyText);
         }
 
-        private static async Task<string> GetResponseStringAsync(ODataRequest request, HttpMethod method = null, string body = null)
+        private static Task<string> GetResponseStringAsync(ODataRequest request, HttpMethod method = null, string body = null)
         {
-            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
+            return Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
                 async () => await RESTCaller.GetResponseStringAsync(request, method ?? HttpMethod.Get, body),
                 (result, count, ex) =>
                 {
@@ -478,9 +478,9 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                     return false;
                 });
         }
-        private static async Task<dynamic> GetResponseJsonAsync(ODataRequest request, HttpMethod method = null, object body = null)
+        private static Task<dynamic> GetResponseJsonAsync(ODataRequest request, HttpMethod method = null, object body = null)
         {
-            return await Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
+            return Retrier.RetryAsync(REQUEST_RETRY_COUNT, 50,
                 async () => await RESTCaller.GetResponseJsonAsync(request, method: method ?? HttpMethod.Get, postData: body),
                 (result, count, ex) =>
                 {
@@ -602,7 +602,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         }
         private static string GetParameterValue(string arg)
         {
-            return arg.Substring(arg.IndexOf(":") + 1).TrimStart(new char[] { '\'', '"' }).TrimEnd(new char[] { '\'', '"' });
+            return arg.Substring(arg.IndexOf(":", StringComparison.Ordinal) + 1).TrimStart('\'', '"').TrimEnd('\'', '"');
         }
 
         private static void CheckLicense(string fileName)
