@@ -2,31 +2,27 @@
 using System.IO;
 using System.Net;
 using Newtonsoft.Json;
+using SenseNet.Client;
 
 namespace SenseNet.Preview.Aspose.PreviewImageGenerators
 {
     public class Tools
     {
-        public static bool ContentNotFound(WebException ex)
+        public static bool ContentNotFound(Exception ex)
         {
             // If the error contains a 404 response, terminate the process silently as the content or its version 
             // is missing - which is not really an error (e.g. if the content has been approved in the meantime).
-
-            var rp = ex?.Response as HttpWebResponse;
-
-            return rp?.StatusCode == HttpStatusCode.NotFound;
+            return ex is ClientException cex && cex.StatusCode == HttpStatusCode.NotFound;
         }
 
-        public static bool IsTerminatorError(WebException ex)
+        public static bool IsTerminatorError(Exception ex)
         {
             // If the error contains a 404 or 500 response, terminate the process silently as the content or its version 
             // is missing - which is not really an error (e.g. if the content has been approved in the meantime).
-
-            var rp = ex?.Response as HttpWebResponse;
-            if (rp == null)
+            if (ex == null || !(ex is ClientException cex))
                 return false;
 
-            switch (rp.StatusCode)
+            switch (cex.StatusCode)
             {
                 case HttpStatusCode.InternalServerError:
                 case HttpStatusCode.NotFound:
@@ -44,12 +40,12 @@ namespace SenseNet.Preview.Aspose.PreviewImageGenerators
         /// <returns>True if the process should be terminated.</returns>
         public static bool HandlePageError(Exception ex, int page, IPreviewGenerationContext context, bool logEvent)
         {
-            if (ContentNotFound(ex as WebException))
+            if (ContentNotFound(ex))
             {
                 context.LogWarning(page, SR.Exceptions.NotFound + ex);
                 return true;
             }
-            if (IsTerminatorError(ex as WebException))
+            if (IsTerminatorError(ex))
             {
                 // We log this because this may be a network problem that 
                 // prevents us from accessing the portal.

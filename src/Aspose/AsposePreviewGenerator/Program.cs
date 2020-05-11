@@ -59,12 +59,11 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             try
             {
                 //UNDONE: make image generation async
-                GenerateImages();
+                await GenerateImagesAsync();
             }
             catch (Exception ex)
             {
-                //UNDONE: check if the NotFound feature still works
-                if (AsposeTools.ContentNotFound(ex as WebException))
+                if (AsposeTools.ContentNotFound(ex))
                     return;
 
                 Logger.WriteError(ContentId, 0, ex: ex, startIndex: StartIndex, version: Version);
@@ -110,7 +109,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
         // ================================================================================================== Preview generation
 
-        protected static void GenerateImages()
+        private static async Task GenerateImagesAsync()
         {
             int previewsFolderId;
             string contentPath;
@@ -119,21 +118,18 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             try
             {
-                previewsFolderId = GetPreviewsFolderId();
-
-                if (previewsFolderId < 1)
+                var fileInfo = await GetFileInfoAsync().ConfigureAwait(false);
+                if (fileInfo == null)
                 {
-                    Logger.WriteWarning(ContentId, 0, "Previews folder not found, maybe the content is missing.");
+                    Logger.WriteWarning(ContentId, 0, "Content not found.");
                     downloadingSubtask.Finish();
                     return;
                 }
 
-                //UNDONE: handle missing file: not an error!
-                var fileInfo = GetFileInfo();
-
-                if (fileInfo == null)
+                previewsFolderId = await GetPreviewsFolderIdAsync();
+                if (previewsFolderId < 1)
                 {
-                    Logger.WriteWarning(ContentId, 0, "Content not found.");
+                    Logger.WriteWarning(ContentId, 0, "Previews folder not found, maybe the content is missing.");
                     downloadingSubtask.Finish();
                     return;
                 }
@@ -143,7 +139,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 contentPath = fileInfo.Path;
 
                 if (Config.ImageGeneration.CheckLicense)
-                    CheckLicense(fileInfo.Path.Substring(contentPath.LastIndexOf('/') + 1));
+                    CheckLicense(contentPath.Substring(contentPath.LastIndexOf('/') + 1));
             }
             catch (Exception ex)
             {
@@ -151,10 +147,12 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 return;
             }
 
-//if (contentPath.EndsWith("freeze.txt", StringComparison.OrdinalIgnoreCase))
-//    Freeze();
-//if (contentPath.EndsWith("overflow.txt", StringComparison.OrdinalIgnoreCase))
-//    Overflow();
+            #region For tests
+            //if (contentPath.EndsWith("freeze.txt", StringComparison.OrdinalIgnoreCase))
+            //    Freeze();
+            //if (contentPath.EndsWith("overflow.txt", StringComparison.OrdinalIgnoreCase))
+            //    Overflow();
+            #endregion
 
             using var docStream = GetBinary();
             if (docStream == null)
@@ -187,74 +185,61 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
         // ================================================================================================== Communication with the portal
 
-        private static int GetPreviewsFolderId()
+        private static async Task<int> GetPreviewsFolderIdAsync()
         {
             try
             {
-                var previewsFolder = GetResponseJsonAsync(new ODataRequest
+                var previewsFolder = await GetResponseJsonAsync(new ODataRequest
                     {
                         ContentId = ContentId,
                         ActionName = "GetPreviewsFolder",
                         Version = Version
                     },
                     HttpMethod.Post,
-                    new {empty = StartIndex == 0}).GetAwaiter().GetResult();
+                    new {empty = StartIndex == 0}).ConfigureAwait(false);
 
                 return previewsFolder.Id;
             }
             catch (Exception ex)
             {
-                Logger.WriteError(ContentId, message: $"GetPreviewsFolderId error: {ex.Message}");
+                Logger.WriteError(ContentId, 0,$"GetPreviewsFolderId error: {ex.Message}", ex, version: Version);
             }
 
             return 0;
         }
-
         private static Stream GetBinary()
         {
             var documentStream = new MemoryStream();
 
-            RESTCaller.GetStreamResponseAsync(ContentId, Version, response =>
-                {
-                    //UNDONE: handle 404 and other non-error messages (see below)
-                    response.Content.CopyToAsync(documentStream).GetAwaiter().GetResult();
-                    documentStream.Seek(0, SeekOrigin.Begin);
-                }, CancellationToken.None)
-                .GetAwaiter().GetResult();
+            try
+            {
+                // download the whole file from the server
+                RESTCaller.GetStreamResponseAsync(ContentId, Version, response =>
+                    {
+                        if (response == null)
+                            throw new ClientException($"Content {ContentId} {Version} not found.", 
+                                HttpStatusCode.NotFound);
+                        
+                        response.Content.CopyToAsync(documentStream).GetAwaiter().GetResult();
+                        documentStream.Seek(0, SeekOrigin.Begin);
+                    }, CancellationToken.None)
+                    .GetAwaiter().GetResult();
+            }
+            catch (ClientException ex)
+            {
+                if (AsposeTools.ContentNotFound(ex))
+                    return null;
 
-            //SetAuthenticationForRequest(myReq);
+                Logger.WriteError(ContentId, 0, "Error during remote file access.", ex, StartIndex, Version);
 
-            //try
-            //{
-            //    using (var wr = myReq.GetResponse())
-            //    {
-            //        using (var rs = wr.GetResponseStream())
-            //        {
-            //            if (rs != null)
-            //                rs.CopyTo(documentStream);
-            //            else
-            //                Logger.WriteWarning(ContentId, 0, "The downloaded binary stream is null.");
-            //        }
-            //    }
-            //}
-            //catch (WebException ex)
-            //{
-            //    // 404 means the document has been deleted or the version (e.g. a draft version) does not
-            //    // exist anymore. That is not an error, we should silently finish executing this task.
-            //    if (Tools.ContentNotFound(ex))
-            //        return null;
-
-            //    Logger.WriteError(ContentId, 0, "Error during remote file access.", ex, StartIndex, Version);
-
-            //    // We need to throw the error further to let the main catch block
-            //    // log the error and set the preview status to 'Error'.
-            //    throw;
-            //}
+                // We need to throw the error further to let the main catch block
+                // log the error and set the preview status to 'Error'.
+                throw;
+            }
 
             return documentStream;
         }
-
-        private static Content GetFileInfo()
+        private static Task<Content> GetFileInfoAsync()
         {
             return Content.LoadAsync(new ODataRequest
             {
@@ -262,7 +247,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 Select = new[] { "Name", "DisplayName", "Path", "CreatedById" },
                 Version = Version,
                 Metadata = MetadataFormat.None
-            }).GetAwaiter().GetResult();
+            });
         }
 
         private static void SetPreviewStatus(int status)
@@ -279,7 +264,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
             
             PostAsync("SetPreviewStatus", new {status}).GetAwaiter().GetResult();
         }
-
         public static void SetPageCount(int pageCount)
         {
             PostAsync("SetPageCount", new { pageCount }).GetAwaiter().GetResult();
@@ -321,52 +305,27 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
             try
             {
+                //UNDONE: make image upload async
                 var imageId = UploadImage(imageStream, previewsFolderId, previewName).GetAwaiter().GetResult();
 
                 // set initial preview image properties (CreatedBy, Index, etc.)
                 PostAsync(imageId, "SetInitialPreviewProperties").GetAwaiter().GetResult();
             }
-            catch (WebException ex)
+            catch (ClientException ex)
             {
-                //UNDONE: handle exception, filter non-errors and retry
-                var logged = false;
+                // a 404 must be handled by the caller
+                if (AsposeTools.ContentNotFound(ex))
+                    throw;
 
-                if (ex.Response != null)
-                {
-                    // a 404 must be handled by the caller
-                    if (AsposeTools.ContentNotFound(ex))
-                        throw;
+                // node is out of date is not an error
+                if (ex.ErrorData?.ExceptionType?.Contains("NodeIsOutOfDateException") ?? false)
+                    return;
 
-                    string responseContent = null;
-
-                    using (var stream = ex.Response.GetResponseStream())
-                    {
-                        if (stream != null)
-                        {
-                            using (var reader = new StreamReader(stream))
-                            {
-                                responseContent = reader.ReadToEnd();
-                            }
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(responseContent))
-                    {
-                        // node is out of date is not an error
-                        if (responseContent.IndexOf("NodeIsOutOfDateException", StringComparison.InvariantCulture) > 0)
-                            return;
-                        
-                        Logger.WriteError(ContentId, page, responseContent, ex, StartIndex, Version);
-                        logged = true;
-                    }
-
-                    // in case of status 500, we still have to terminate the process after logging the error
-                    if (AsposeTools.IsTerminatorError(ex))
-                        throw;
-                }
-
-                if (!logged)
-                    Logger.WriteError(ContentId, page, "Error during uploading a preview image.", ex, StartIndex, Version);
+                Logger.WriteError(ContentId, page, ex.Message, ex, StartIndex, Version);
+                
+                // in case of status 500, we still have to terminate the process after logging the error
+                if (AsposeTools.IsTerminatorError(ex))
+                    throw;
             }
         }
         public static void SaveEmptyPreview(int page, int previewsFolderId)
@@ -404,7 +363,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 if (ex == null)
                     return true;
 
-                if (count == 1)
+                if (count == 1 || AsposeTools.ContentNotFound(ex))
                     throw ex;
 
                 return false;
@@ -512,7 +471,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                         return true;
 
                     // last try: throw the exception
-                    if (count == 1)
+                    if (count == 1 || AsposeTools.ContentNotFound(ex))
                         throw ex;
 
                     // failed, but give them a new chance
@@ -529,7 +488,7 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                         return true;
 
                     // last try: throw the exception
-                    if (count == 1)
+                    if (count == 1 || AsposeTools.ContentNotFound(ex))
                         throw ex;
 
                     // failed, but give them a new chance
