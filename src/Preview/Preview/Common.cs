@@ -1,8 +1,11 @@
-﻿namespace SenseNet.Preview
+﻿using System;
+
+namespace SenseNet.Preview
 {
     public class Common
     {
-        public static readonly string LICENSEPATH = "Aspose.Total.lic";
+        [Obsolete("Use platform-specific license path instead.", true)]
+        public static readonly string LICENSEPATH = "";
 
         public static readonly string PREVIEW_IMAGENAME = "preview{0}.png";
         public static readonly int PREVIEW_WIDTH = 1754;
