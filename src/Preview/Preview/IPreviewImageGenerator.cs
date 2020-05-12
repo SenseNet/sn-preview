@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SenseNet.Preview
 {
@@ -8,6 +10,6 @@ namespace SenseNet.Preview
         string GetTaskNameByExtension(string extension);
         string GetTaskTitleByExtension(string extension);
         string[] GetSupportedTaskNames();
-        void GeneratePreview(Stream docStream, IPreviewGenerationContext context);
+        Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context, CancellationToken cancellationToken);
     }
 }

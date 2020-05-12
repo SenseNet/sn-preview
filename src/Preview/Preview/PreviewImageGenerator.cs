@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SenseNet.Tools;
 
 namespace SenseNet.Preview
@@ -9,7 +11,8 @@ namespace SenseNet.Preview
     public abstract class PreviewImageGenerator : IPreviewImageGenerator
     {
         public abstract string[] KnownExtensions { get; }
-        public abstract void GeneratePreview(Stream docStream, IPreviewGenerationContext context);
+        public abstract Task GeneratePreviewAsync(Stream docStream, IPreviewGenerationContext context, 
+            CancellationToken cancellationToken);
         public virtual string GetTaskNameByExtension(string extension)
         {
             // means default
@@ -29,16 +32,16 @@ namespace SenseNet.Preview
         // ====================================================================================================================
 
         private static readonly object LoaderSync = new object();
-        private static Dictionary<string, IPreviewImageGenerator> __providers;
+        private static Dictionary<string, IPreviewImageGenerator> _providers;
         private static Dictionary<string, IPreviewImageGenerator> Providers
         {
             get
             {
-                if (__providers == null)
+                if (_providers == null)
                     lock (LoaderSync)
-                        if (__providers == null)
-                            __providers = CreateProviderPrototypes();
-                return __providers;
+                        if (_providers == null)
+                            _providers = CreateProviderPrototypes();
+                return _providers;
             }
         }
         private static Dictionary<string, IPreviewImageGenerator> CreateProviderPrototypes()
@@ -53,9 +56,8 @@ namespace SenseNet.Preview
                 var provider = (IPreviewImageGenerator)Activator.CreateInstance(providerType);
                 foreach (var extension in provider.KnownExtensions)
                 {
-                    IPreviewImageGenerator existing;
                     var ext = extension.ToLowerInvariant();
-                    if (providers.TryGetValue(ext, out existing))
+                    if (providers.TryGetValue(ext, out var existing))
                     {
                         if (providerType.IsInstanceOfType(existing))
                             continue;
@@ -96,12 +98,13 @@ namespace SenseNet.Preview
             return Providers.ContainsKey(extension.ToLowerInvariant());
         }
 
-        public static void GeneratePreview(string extension, Stream docStream, IPreviewGenerationContext context)
+        public static Task GeneratePreviewAsync(string extension, Stream docStream, IPreviewGenerationContext context, 
+            CancellationToken cancellationToken)
         {
-            IPreviewImageGenerator provider;
-            if (!Providers.TryGetValue(extension.ToLowerInvariant(), out provider))
+            if (!Providers.TryGetValue(extension.ToLowerInvariant(), out var provider))
                 throw new ApplicationException(SR.F(SR.UnknownProvider_1, extension));
-            provider.GeneratePreview(docStream, context);
+
+            return provider.GeneratePreviewAsync(docStream, context, cancellationToken);
         }
     }
 }
