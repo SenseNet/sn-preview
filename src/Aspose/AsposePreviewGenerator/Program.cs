@@ -581,18 +581,6 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
         
         private static bool ParseParameters(string[] args)
         {
-            /* *********************************************************** */
-            
-            //UNDONE: remove hardcoded parameters
-            ContentId = 1140; //1368;
-            Version = "V1.0.A";
-            StartIndex = 0;
-            MaxPreviewCount = 3;
-            SiteUrl = "https://localhost:44362";
-            return true;
-
-            /* *********************************************************** */
-
             foreach (var arg in args)
             {
                 if (arg.StartsWith("USERNAME:", StringComparison.OrdinalIgnoreCase))
@@ -609,8 +597,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
 
                     var settings = new JsonSerializerSettings { DateFormatHandling = DateFormatHandling.IsoDateFormat };
                     var serializer = JsonSerializer.Create(settings);
-                    var jreader = new JsonTextReader(new StringReader(data));
-                    dynamic previewData = serializer.Deserialize(jreader) as JObject;
+                    var reader = new JsonTextReader(new StringReader(data));
+                    dynamic previewData = serializer.Deserialize(reader) as JObject;
 
                     ContentId = previewData.Id;
                     Version = previewData.Version;
@@ -620,7 +608,8 @@ namespace SenseNet.Preview.Aspose.AsposePreviewGenerator
                 }
             }
 
-            return ContentId > 0 && !string.IsNullOrEmpty(Version) && StartIndex >= 0 && MaxPreviewCount > 0 && !string.IsNullOrEmpty(SiteUrl);
+            return ContentId > 0 && !string.IsNullOrEmpty(Version) && StartIndex >= 0 && 
+                   MaxPreviewCount > 0 && !string.IsNullOrEmpty(SiteUrl);
         }
         private static string GetParameterValue(string arg)
         {
