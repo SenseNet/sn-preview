@@ -1,8 +1,8 @@
 <Package type='Install'>
   <Id>SenseNet.Preview</Id>
   <Description>sensenet Preview and Document Viewer</Description>
-  <ReleaseDate>2020-05-12</ReleaseDate>
-  <Version>7.2.0.1</Version>
+  <ReleaseDate>2020-05-28</ReleaseDate>
+  <Version>7.3.0</Version>
   <Dependencies>
     <Dependency id='SenseNet.Services' minVersion='7.6.1' />
   </Dependencies>
