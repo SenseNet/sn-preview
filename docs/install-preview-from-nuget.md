@@ -16,7 +16,9 @@ This means that even community customers can install the Preview component and d
 > This package also contains demo files and pre-generated preview images so that you can install and try it freely, without having to buy the sensenet or [Aspose](http://aspose.com) licence.
 
 ## The Aspose package
-There is a separate NuGet package that contains the preview generator tool and other server-side modules needed for generating preview images. It is built using the [Aspose](http://aspose.com) libraries and it is available only from a private sensenet NuGet feed. 
+There is a separate NuGet package that contains the preview generator tool and other server-side modules needed for generating preview images. It is built using the [Aspose](http://aspose.com) libraries. 
+
+> Please note that the [Aspose](http://aspose.com) implementation of the sensenet preview provider has been moved to the [sn-preview-aspose](https://github.com/SenseNet/sn-preview-aspose) repository.
 
 If you need this feature, you have two options:
 
@@ -44,6 +46,8 @@ To get started, stop your web site and install the preview package the usual way
 Optionally, if you have installed the *WebPages* and *Workspaces* components, you may add the usual `importdemo:true` parameter to the line above. That will give you a couple of pregenerated preview images for trying out the feature (you will be able to find them in the Budapest document workspace in the Content Repository).
 
 ### Install the Aspose component
+
+> Please note that the [Aspose](http://aspose.com) implementation of the sensenet preview provider has been moved to the [sn-preview-aspose](https://github.com/SenseNet/sn-preview-aspose) repository.
 
 > Accessible for **Enterprise** customers.
 

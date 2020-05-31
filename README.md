@@ -6,5 +6,5 @@ In this repository, you'll find preview-related modules for the [sensenet](https
 ## Installation
 About the contents of Preview packages and how to install them, please visit the [install guide](/docs/install-preview-from-nuget.md).
 
-## For developers
-This repository contains the source code of all preview components but does not contain the [Aspose](http://aspose.com) libraries and license file necessary for compiling the projects. Please visit [www.aspose.com](http://aspose.com) for downloading a trial version if you want to experiment with these packages.
+## Aspose preview provider
+> Please note that the [Aspose](http://aspose.com) implementation of the sensenet preview provider has been moved to the [sn-preview-aspose](https://github.com/SenseNet/sn-preview-aspose) repository.
