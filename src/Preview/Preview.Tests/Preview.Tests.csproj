@@ -79,14 +79,14 @@
     <Reference Include="Nito.Disposables, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nito.Disposables.2.0.0\lib\netstandard2.0\Nito.Disposables.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.BlobStorage, Version=7.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.BlobStorage.7.4.0\lib\netstandard2.0\SenseNet.BlobStorage.dll</HintPath>
+    <Reference Include="SenseNet.BlobStorage, Version=7.4.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.BlobStorage.7.4.0.1\lib\netstandard2.0\SenseNet.BlobStorage.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.Common, Version=7.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Common.7.4.0\lib\netstandard2.0\SenseNet.Common.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.ContentRepository, Version=7.7.11.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.ContentRepository.7.7.11\lib\netstandard2.0\SenseNet.ContentRepository.dll</HintPath>
+    <Reference Include="SenseNet.ContentRepository, Version=7.7.12.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.ContentRepository.7.7.12.3\lib\netstandard2.0\SenseNet.ContentRepository.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.Preview, Version=7.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Preview.7.1.0\lib\netstandard2.0\SenseNet.Preview.dll</HintPath>
@@ -97,8 +97,8 @@
     <Reference Include="SenseNet.Security, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Security.4.1.0\lib\netstandard2.0\SenseNet.Security.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.Storage, Version=7.7.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.Storage.7.7.9\lib\netstandard2.0\SenseNet.Storage.dll</HintPath>
+    <Reference Include="SenseNet.Storage, Version=7.7.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.Storage.7.7.9.1\lib\netstandard2.0\SenseNet.Storage.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.TaskManagement.Core, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.TaskManagement.Core.2.0.1\lib\netstandard2.0\SenseNet.TaskManagement.Core.dll</HintPath>
@@ -109,8 +109,8 @@
     <Reference Include="SenseNet.TokenAuthentication, Version=7.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.TokenAuthentication.7.4.0\lib\netstandard2.0\SenseNet.TokenAuthentication.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.Tools, Version=3.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.Tools.3.2.2\lib\netstandard2.0\SenseNet.Tools.dll</HintPath>
+    <Reference Include="SenseNet.Tools, Version=3.2.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.Tools.3.2.4\lib\netstandard2.0\SenseNet.Tools.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -179,6 +179,10 @@
     <ProjectReference Include="..\Preview.Controller\Preview.Controller.csproj">
       <Project>{64FFBB21-44DB-4354-9379-757AEBE2FA74}</Project>
       <Name>Preview.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Preview\Preview.csproj">
+      <Project>{01ae54af-db4e-431e-a3f9-fbcd2ad73d03}</Project>
+      <Name>Preview</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
