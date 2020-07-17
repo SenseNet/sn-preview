@@ -1,8 +1,9 @@
 ﻿using SenseNet.Configuration;
+using SenseNet.Preview;
 using SenseNet.Tools;
 
 // ReSharper disable once CheckNamespace
-namespace SenseNet.Preview
+namespace SenseNet.Extensions.DependencyInjection
 {
     public static class PreviewExtensions
     {
