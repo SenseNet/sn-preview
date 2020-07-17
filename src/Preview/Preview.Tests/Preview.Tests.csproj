@@ -180,10 +180,6 @@
       <Project>{64FFBB21-44DB-4354-9379-757AEBE2FA74}</Project>
       <Name>Preview.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Preview\Preview.csproj">
-      <Project>{01ae54af-db4e-431e-a3f9-fbcd2ad73d03}</Project>
-      <Name>Preview</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
