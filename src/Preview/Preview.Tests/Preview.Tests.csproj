@@ -103,8 +103,8 @@
     <Reference Include="SenseNet.Common, Version=7.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Common.7.4.0\lib\netstandard2.0\SenseNet.Common.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.ContentRepository, Version=7.7.13.3, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.ContentRepository.7.7.13.3\lib\netstandard2.0\SenseNet.ContentRepository.dll</HintPath>
+    <Reference Include="SenseNet.ContentRepository, Version=7.7.13.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.ContentRepository.7.7.13.4\lib\netstandard2.0\SenseNet.ContentRepository.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.Preview, Version=7.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Preview.7.2.0\lib\netstandard2.0\SenseNet.Preview.dll</HintPath>
@@ -115,8 +115,8 @@
     <Reference Include="SenseNet.Security, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.Security.4.1.0\lib\netstandard2.0\SenseNet.Security.dll</HintPath>
     </Reference>
-    <Reference Include="SenseNet.Storage, Version=7.7.10.3, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SenseNet.Storage.7.7.10.3\lib\netstandard2.0\SenseNet.Storage.dll</HintPath>
+    <Reference Include="SenseNet.Storage, Version=7.7.10.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SenseNet.Storage.7.7.10.4\lib\netstandard2.0\SenseNet.Storage.dll</HintPath>
     </Reference>
     <Reference Include="SenseNet.TaskManagement.Core, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SenseNet.TaskManagement.Core.2.2.0\lib\netstandard2.0\SenseNet.TaskManagement.Core.dll</HintPath>
