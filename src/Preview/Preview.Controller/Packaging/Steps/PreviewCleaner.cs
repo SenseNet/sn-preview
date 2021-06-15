@@ -479,8 +479,8 @@ ORDER BY MajorNumber, MinorNumber";
 
         private static RelationalDataProviderBase GetDb()
         {
-            if (!(DataStore.DataProvider is RelationalDataProviderBase db))
-                throw new NotSupportedException($"Database provider not supported: {DataStore.DataProvider?.GetType().FullName}");
+            if (!(Configuration.Providers.Instance.DataProvider is RelationalDataProviderBase db))
+                throw new NotSupportedException($"Database provider not supported: {Configuration.Providers.Instance.DataProvider?.GetType().FullName}");
             return db;
         }
         #endregion
