@@ -1,5 +1,7 @@
 ﻿using System.Threading;
+using SenseNet.ContentRepository.Search;
 using SenseNet.Packaging.Steps;
+using SenseNet.Search.Indexing;
 using ExecutionContext = SenseNet.Packaging.ExecutionContext;
 
 namespace SenseNet.Preview.Packaging.Steps
@@ -30,7 +32,8 @@ namespace SenseNet.Preview.Packaging.Steps
 
             using (new Timer(state => WriteProgress(), null, 1000, 2000))
             {
-                var pc = new PreviewCleaner(Path, Mode, MaxIndex, MaxDegreeOfParallelism, BlockSize);
+                var indexingEngine = GetService<ISearchManager>()?.SearchEngine?.IndexingEngine;
+                var pc = new PreviewCleaner(indexingEngine, Path, Mode, MaxIndex, MaxDegreeOfParallelism, BlockSize);
                 pc.OnFolderDeleted += (s, e) => { Interlocked.Increment(ref _folderCount);};
                 pc.OnImageDeleted += (s, e) => { Interlocked.Increment(ref _imageCount); };
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using SenseNet.Configuration;
 using SenseNet.ContentRepository;
 using SenseNet.ContentRepository.Storage.Security;
 
@@ -70,7 +71,7 @@ namespace SenseNet.Preview.Controller
             // and check for permissions after.
             var caller = AccessProvider.Current.GetOriginalUser();
             var user = SystemAccount.Execute(() => string.IsNullOrEmpty(data.CreatedBy) ? null : User.Load(data.CreatedBy));
-            if (user == null || !SecurityHandler.HasPermission(caller, user.Id, PermissionType.Open))
+            if (user == null || !Providers.Instance.SecurityHandler.HasPermission(caller, user.Id, PermissionType.Open))
                 user = User.Somebody;
             
             CreatedBy = new PreviewCommentUser

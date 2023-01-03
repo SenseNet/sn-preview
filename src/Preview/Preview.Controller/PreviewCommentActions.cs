@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SenseNet.ApplicationModel;
@@ -153,7 +154,7 @@ namespace SenseNet.Preview.Controller
                 file.VersionCreationDate = content.ContentHandler.VersionCreationDate;
                 file.VersionModifiedBy = content.ContentHandler.VersionModifiedBy;
                 file.VersionModificationDate = content.ContentHandler.VersionModificationDate;
-                file.Save(SavingMode.KeepVersion);
+                file.SaveAsync(SavingMode.KeepVersion, CancellationToken.None).GetAwaiter().GetResult();
             }
         }
         private static void AssertCommentFeature(Content content)

@@ -15,6 +15,7 @@ using SenseNet.ContentRepository.Storage;
 using SenseNet.ContentRepository.Storage.Data;
 using SenseNet.Diagnostics;
 using SenseNet.Search;
+using SenseNet.Search.Indexing;
 using SenseNet.Search.Querying;
 using Retrier = SenseNet.Tools.Retrier;
 // ReSharper disable AccessToDisposedClosure
@@ -78,6 +79,7 @@ ORDER BY MajorNumber, MinorNumber";
 
         private int MaxDegreeOfParallelism { get; }
         private int BlockSize { get; }
+        private IIndexingEngine IndexingEngine { get; }
 
         private static readonly Lazy<SnTrace.SnTraceCategory> TraceCategory = new Lazy<SnTrace.SnTraceCategory>(() =>
         {
@@ -93,7 +95,7 @@ ORDER BY MajorNumber, MinorNumber";
 
         //========================================================================================= Constructors
 
-        public PreviewCleaner(string path = null, CleanupMode cleanupMode = CleanupMode.AllVersions,
+        public PreviewCleaner(IIndexingEngine indexingEngine, string path = null, CleanupMode cleanupMode = CleanupMode.AllVersions,
             int maxIndex = 0, int maxDegreeOfParallelism = 10, int blockSize = 500)
         {
             Path = path;
@@ -102,6 +104,8 @@ ORDER BY MajorNumber, MinorNumber";
 
             MaxDegreeOfParallelism = Math.Max(1, maxDegreeOfParallelism);
             BlockSize = Math.Max(1, blockSize);
+
+            IndexingEngine = indexingEngine;
         }
 
         //========================================================================================= Public API
@@ -256,7 +260,7 @@ ORDER BY MajorNumber, MinorNumber";
 
             Trace.Write("Removing preview folder block from the index.");
 
-            IndexManager.IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
+            IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
                 {
                     new SnTerm(IndexFieldName.InTree, p),
                     new SnTerm(IndexFieldName.Path, p)
@@ -340,7 +344,7 @@ ORDER BY MajorNumber, MinorNumber";
 
             Trace.Write("Removing preview folder block from the index.");
 
-            IndexManager.IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
+            IndexingEngine.WriteIndexAsync(pathBag.SelectMany(p => new[]
                 {
                     new SnTerm(IndexFieldName.InTree, p),
                     new SnTerm(IndexFieldName.Path, p)
