@@ -17,7 +17,7 @@ namespace SenseNet.Preview
         public static readonly int THUMBNAIL_WIDTH = 200;
         public static readonly int THUMBNAIL_HEIGHT = 200;
 
-        public static readonly System.Drawing.Imaging.ImageFormat PREVIEWIMAGEFORMAT = System.Drawing.Imaging.ImageFormat.Png;
+        public static readonly string PREVIEWIMAGEFORMAT = "png";
 
         public static readonly string[] WORD_EXTENSIONS = { ".doc", ".docx", ".odt", ".rtf", ".txt", ".xml", ".csv" };
         public static readonly string[] DIAGRAM_EXTENSIONS = { ".vdw", ".vdx", ".vsd", ".vss", ".vst", ".vsx", ".vtx" };

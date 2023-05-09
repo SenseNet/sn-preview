@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace SenseNet.Preview
 
         Task SavePreviewAndThumbnailAsync(Stream imgStream, int page, CancellationToken cancellationToken);
         Task SaveEmptyPreviewAsync(int page, CancellationToken cancellationToken);
-        Task SaveImageAsync(Bitmap image, int page, CancellationToken cancellationToken);
+        Task SaveImageAsync(Stream imgStream, int page, CancellationToken cancellationToken);
 
         void LogInfo(int page, string message);
         void LogWarning(int page, string message);
