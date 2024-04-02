@@ -4,9 +4,6 @@ namespace SenseNet.Preview
 {
     public class Common
     {
-        [Obsolete("Use platform-specific license path instead.", true)]
-        public static readonly string LICENSEPATH = "";
-
         public static readonly string PREVIEW_IMAGENAME = "preview{0}.png";
         public static readonly int PREVIEW_WIDTH = 1754;
         public static readonly int PREVIEW_HEIGHT = 1754;
