@@ -16,7 +16,7 @@ namespace SenseNet.Preview.Controller
         private static readonly object DeleteResultModified = new {modified = true};
         private static readonly object DeleteResultNotModified = new {modified = false};
 
-        [ODataFunction]
+        [ODataFunction(Category = "Preview")]
         [ContentTypes(N.CT.File)]
         [AllowedRoles(N.R.All)]
         [RequiredPermissions(N.P.Preview)]
@@ -28,7 +28,7 @@ namespace SenseNet.Preview.Controller
             return GetPreviewComments(((File)content.ContentHandler).PreviewComments, page)
                 .Select(cd => cd.ToPreviewComment());
         }
-        [ODataAction]
+        [ODataAction(Category = "Preview")]
         [ContentTypes(N.CT.File)]
         [AllowedRoles(N.R.All)]
         [RequiredPermissions(N.P.Open)]
@@ -43,7 +43,7 @@ namespace SenseNet.Preview.Controller
 
             return comment.ToPreviewComment();
         }
-        [ODataAction]
+        [ODataAction(Category = "Preview")]
         [ContentTypes(N.CT.File)]
         [AllowedRoles(N.R.All)]
         [RequiredPermissions(N.P.Open)]
