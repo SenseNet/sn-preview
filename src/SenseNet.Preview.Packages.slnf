@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "Preview\\SenseNet.Preview.sln",
+    "projects": [
+      "Preview.Controller\\Preview.Controller.csproj",
+      "Preview.Install\\Preview.Install.csproj",
+      "Preview\\Preview.csproj"
+    ]
+  }
+}

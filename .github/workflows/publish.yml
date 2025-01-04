@@ -15,7 +15,7 @@ jobs:
 
     env:
       BUILD_CONFIG: 'Release'
-      SOLUTION: 'Preview/SenseNet.Preview.sln'
+      SOLUTION: 'SenseNet.Preview.Packages.slnf'
 
     steps:
     - name: Checkout
