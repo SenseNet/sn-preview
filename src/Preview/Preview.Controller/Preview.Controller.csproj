@@ -5,7 +5,7 @@
     <PackageId>SenseNet.Preview.Controller</PackageId>
     <AssemblyName>SenseNet.Preview.Controller</AssemblyName>
     <RootNamespace>SenseNet.Preview.Controller</RootNamespace>
-    <Version>7.3.7</Version>
+    <Version>7.3.7.1</Version>
     <Authors>kavics,tusmester,aniko,lajos,bezoo</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>

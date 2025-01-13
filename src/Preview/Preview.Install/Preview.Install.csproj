@@ -5,7 +5,7 @@
     <PackageId>SenseNet.Preview.Install</PackageId>
     <AssemblyName>SenseNet.Preview.Install</AssemblyName>
     <RootNamespace>SenseNet.Preview.Install</RootNamespace>
-    <Version>7.3.5</Version>
+    <Version>7.3.5.1</Version>
     <Authors>kavics,tusmester,aniko</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
