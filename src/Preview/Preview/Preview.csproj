@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>SenseNet.Preview</AssemblyName>
     <RootNamespace>SenseNet.Preview</RootNamespace>
-    <Version>7.2.4</Version>
+    <Version>7.2.4.1</Version>
     <Company>Sense/Net Inc.</Company>
     <Description>General document preview library for the sensenet platform containing common interfaces.</Description>
     <PackageId>SenseNet.Preview</PackageId>
