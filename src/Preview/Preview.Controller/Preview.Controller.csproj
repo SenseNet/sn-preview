@@ -19,6 +19,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>sensenet Preview</Product>
     <Description>sensenet Preview Controller contains the server-side components of the preview functionality.</Description>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>

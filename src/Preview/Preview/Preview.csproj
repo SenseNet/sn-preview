@@ -18,6 +18,8 @@
     <PackageIconUrl>https://raw.githubusercontent.com/SenseNet/sn-resources/master/images/sn-icon/sensenet-icon-64.png</PackageIconUrl>
     <Authors>kavics,aniko,lajos,tusmester</Authors>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>

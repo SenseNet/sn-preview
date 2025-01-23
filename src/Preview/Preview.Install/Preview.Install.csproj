@@ -19,6 +19,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>sensenet Preview</Product>
     <Description>sensenet Preview installer contains the install content for the Preview functionality in sensenet. This package should be installed only in a single project.</Description>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
