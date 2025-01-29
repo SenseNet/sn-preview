@@ -24,7 +24,6 @@
 
   <ItemGroup>
 	<PackageReference Include="SenseNet.Tools" Version="3.2.13.1" />
-	<PackageReference Include="System.Diagnostics.EventLog" Version="7.0.0" />
   </ItemGroup>
 
 </Project>
