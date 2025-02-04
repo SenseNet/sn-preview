@@ -5,7 +5,7 @@
     <AssemblyName>SenseNet.Preview.Install</AssemblyName>
     <RootNamespace>SenseNet.Preview.Install</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
-    <Version>7.3.5.2</Version>
+    <Version>7.4.0</Version>
     <Authors>kavics,tusmester,aniko</Authors>
     <Company>Sense/Net Inc.</Company>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
