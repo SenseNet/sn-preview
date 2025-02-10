@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>SenseNet.Preview</AssemblyName>
     <RootNamespace>SenseNet.Preview</RootNamespace>
-    <Version>7.2.4</Version>
+    <Version>7.3.0</Version>
     <Company>Sense/Net Inc.</Company>
     <Description>General document preview library for the sensenet platform containing common interfaces.</Description>
     <PackageId>SenseNet.Preview</PackageId>
@@ -18,10 +18,12 @@
     <PackageIconUrl>https://raw.githubusercontent.com/SenseNet/sn-resources/master/images/sn-icon/sensenet-icon-64.png</PackageIconUrl>
     <Authors>kavics,aniko,lajos,tusmester</Authors>
     <Copyright>Copyright © Sense/Net Inc.</Copyright>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SenseNet.Tools" Version="3.2.13" />
+	<PackageReference Include="SenseNet.Tools" Version="3.3.0" />
   </ItemGroup>
 
 </Project>
